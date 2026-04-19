@@ -103,10 +103,13 @@ class TaskController extends Controller
     )]
     public function show(int $id): JsonResponse
     {
-        $task = $this->taskService->findTaskForAuthorization($id);
+        $task = \App\Models\Task::with(['comments.user'])
+            ->withoutGlobalScopes()
+            ->findOrFail($id);
+
         Gate::authorize('view', $task);
 
-        return response()->json($task);
+        return response()->json(new \App\Http\Resources\TaskResource($task));
     }
 
     #[OA\Put(

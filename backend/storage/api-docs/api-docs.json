@@ -210,6 +210,108 @@
                 ]
             }
         },
+        "/api/tasks/{task}/comments": {
+            "get": {
+                "tags": [
+                    "Comentários"
+                ],
+                "summary": "Listar comentários de uma tarefa",
+                "description": "Retorna todos os comentários de uma tarefa específica em ordem cronológica.",
+                "operationId": "5c0933bdfe8538ad4b86a98d82daa971",
+                "parameters": [
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de comentários",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    },
+                    "404": {
+                        "description": "Tarefa não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Comentários"
+                ],
+                "summary": "Adicionar comentário",
+                "description": "Cria um novo comentário na tarefa. Apenas o dono da tarefa pode comentar.",
+                "operationId": "ea48d76e8e2cc4599de6298f3b053ff6",
+                "parameters": [
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "content"
+                                ],
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Este é um comentário de exemplo."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Comentário criado com sucesso"
+                    },
+                    "403": {
+                        "description": "Proibido - Apenas o dono da tarefa pode comentar"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    },
+                    "404": {
+                        "description": "Tarefa não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/tasks": {
             "get": {
                 "tags": [
@@ -519,6 +621,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Comentários",
+            "description": "Gerenciamento de comentários nas tarefas"
+        },
         {
             "name": "Tarefas",
             "description": "Operações relacionadas ao gerenciamento de tarefas"

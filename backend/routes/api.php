@@ -15,4 +15,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Tarefas
     Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class);
+
+    // Comentários
+    Route::get('/tasks/{task}/comments', [\App\Http\Controllers\Api\CommentController::class, 'index']);
+    Route::post('/tasks/{task}/comments', [\App\Http\Controllers\Api\CommentController::class, 'store']);
 });
