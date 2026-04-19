@@ -14,6 +14,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
 
     // Tarefas
+    Route::get('/tasks/stats', [\App\Http\Controllers\Api\TaskController::class, 'stats']);
     Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class);
 
     // Comentários

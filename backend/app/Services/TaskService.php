@@ -63,4 +63,34 @@ class TaskService
             ->latest()
             ->paginate($perPage);
     }
+
+    /**
+     * Get dashboard statistics for the authenticated user.
+     */
+    public function getDashboardStats(): array
+    {
+        $baseQuery = Auth::user()->tasks();
+
+        $totalTasks = (clone $baseQuery)->count();
+        $pendingTasks = (clone $baseQuery)->where('status', 'pendente')->count();
+        $inProgressTasks = (clone $baseQuery)->where('status', 'em_andamento')->count();
+        $completedTasks = (clone $baseQuery)->where('status', 'concluida')->count();
+
+        $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
+
+        $overdueTasks = (clone $baseQuery)
+            ->where('status', '!=', 'concluida')
+            ->whereNotNull('due_date')
+            ->whereDate('due_date', '<', now())
+            ->count();
+
+        return [
+            'total_tasks' => $totalTasks,
+            'pending_tasks' => $pendingTasks,
+            'in_progress_tasks' => $inProgressTasks,
+            'completed_tasks' => $completedTasks,
+            'completion_rate' => $completionRate,
+            'overdue_tasks' => $overdueTasks,
+        ];
+    }
 }

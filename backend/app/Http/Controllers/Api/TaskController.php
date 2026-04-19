@@ -19,6 +19,36 @@ class TaskController extends Controller
     }
 
     #[OA\Get(
+        path: '/api/tasks/stats',
+        summary: 'Obter estatísticas do Dashboard',
+        description: 'Retorna um resumo estatístico das tarefas do usuário logado para exibição no Dashboard principal.',
+        security: [['bearerAuth' => []]],
+        tags: ['Tarefas'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Estatísticas recuperadas com sucesso',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'total_tasks', type: 'integer', example: 15),
+                        new OA\Property(property: 'pending_tasks', type: 'integer', example: 5),
+                        new OA\Property(property: 'in_progress_tasks', type: 'integer', example: 3),
+                        new OA\Property(property: 'completed_tasks', type: 'integer', example: 7),
+                        new OA\Property(property: 'completion_rate', type: 'number', format: 'float', example: 46.67),
+                        new OA\Property(property: 'overdue_tasks', type: 'integer', example: 2)
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Não autorizado')
+        ]
+    )]
+    public function stats(): JsonResponse
+    {
+        return response()->json($this->taskService->getDashboardStats());
+    }
+
+    #[OA\Get(
         path: '/api/tasks',
         summary: 'Listar todas as tarefas',
         description: 'Retorna uma lista paginada de tarefas pertencentes ao usuário autenticado, com suporte a filtros e busca.',

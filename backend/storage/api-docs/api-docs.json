@@ -312,6 +312,63 @@
                 ]
             }
         },
+        "/api/tasks/stats": {
+            "get": {
+                "tags": [
+                    "Tarefas"
+                ],
+                "summary": "Obter estatísticas do Dashboard",
+                "description": "Retorna um resumo estatístico das tarefas do usuário logado para exibição no Dashboard principal.",
+                "operationId": "3f887bf3ec7140ecdd12dd0eda10c16f",
+                "responses": {
+                    "200": {
+                        "description": "Estatísticas recuperadas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_tasks": {
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "pending_tasks": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "in_progress_tasks": {
+                                            "type": "integer",
+                                            "example": 3
+                                        },
+                                        "completed_tasks": {
+                                            "type": "integer",
+                                            "example": 7
+                                        },
+                                        "completion_rate": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 46.67
+                                        },
+                                        "overdue_tasks": {
+                                            "type": "integer",
+                                            "example": 2
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/tasks": {
             "get": {
                 "tags": [
