@@ -61,4 +61,34 @@ class Task extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    /**
+     * Scope: Filter by status.
+     */
+    public function scopeStatus($query, ?string $status)
+    {
+        return $query->when($status, fn($q) => $q->where('status', $status));
+    }
+
+    /**
+     * Scope: Filter by date range (created_at).
+     */
+    public function scopeDateRange($query, ?string $start, ?string $end)
+    {
+        return $query->when($start, fn($q) => $q->whereDate('created_at', '>=', $start))
+            ->when($end, fn($q) => $q->whereDate('created_at', '<=', $end));
+    }
+
+    /**
+     * Scope: Textual search in title or description.
+     */
+    public function scopeSearch($query, ?string $search)
+    {
+        return $query->when($search, function ($q) use ($search) {
+            $q->where(function ($sq) use ($search) {
+                $sq->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        });
+    }
 }

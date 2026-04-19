@@ -21,21 +21,38 @@ class TaskController extends Controller
     #[OA\Get(
         path: '/api/tasks',
         summary: 'Listar todas as tarefas',
-        description: 'Retorna uma lista de todas as tarefas pertencentes ao usuário autenticado.',
+        description: 'Retorna uma lista paginada de tarefas pertencentes ao usuário autenticado, com suporte a filtros e busca.',
         security: [['bearerAuth' => []]],
         tags: ['Tarefas'],
         responses: [
             new OA\Response(
                 response: 200,
                 description: 'Lista de tarefas recuperada com sucesso',
-                content: new OA\JsonContent(type: 'array', items: new OA\Items(type: 'object'))
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
+                        new OA\Property(property: 'links', type: 'object'),
+                        new OA\Property(property: 'meta', type: 'object')
+                    ]
+                )
             ),
             new OA\Response(response: 401, description: 'Não autorizado')
         ]
     )]
-    public function index(): JsonResponse
+    #[OA\Parameter(name: 'status', in: 'query', description: 'Filtrar por status', required: false, schema: new OA\Schema(type: 'string', enum: ['pendente', 'em_andamento', 'concluida']))]
+    #[OA\Parameter(name: 'start_date', in: 'query', description: 'Data inicial (YYYY-MM-DD)', required: false, schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'end_date', in: 'query', description: 'Data final (YYYY-MM-DD)', required: false, schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'search', in: 'query', description: 'Busca textual no título ou descrição', required: false, schema: new OA\Schema(type: 'string'))]
+    #[OA\Parameter(name: 'per_page', in: 'query', description: 'Itens por página', required: false, schema: new OA\Schema(type: 'integer', default: 10))]
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        return response()->json($this->taskService->listTasks());
+        $filters = $request->only(['status', 'start_date', 'end_date', 'search']);
+        $perPage = (int) $request->query('per_page', 10);
+
+        $tasks = $this->taskService->listTasks($filters, $perPage);
+
+        return \App\Http\Resources\TaskResource::collection($tasks)->response();
     }
 
     #[OA\Post(
