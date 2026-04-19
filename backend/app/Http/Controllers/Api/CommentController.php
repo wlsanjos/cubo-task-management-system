@@ -39,10 +39,11 @@ class CommentController extends Controller
             new OA\Response(response: 404, description: 'Tarefa não encontrada')
         ]
     )]
-    public function index(int $taskId): JsonResponse
+    public function index(\App\Models\Task $task): JsonResponse
     {
-        // A Global Scope da Task já filtra por usuário ou lança 404
-        $comments = $this->commentService->getTaskComments($taskId);
+        Gate::authorize('view', $task);
+
+        $comments = $this->commentService->getTaskComments($task->id);
         return response()->json(CommentResource::collection($comments));
     }
 
@@ -71,14 +72,13 @@ class CommentController extends Controller
             new OA\Response(response: 404, description: 'Tarefa não encontrada')
         ]
     )]
-    public function store(Request $request, int $taskId): JsonResponse
+    public function store(Request $request, \App\Models\Task $task): JsonResponse
     {
         $request->validate(['content' => 'required|string|max:1000']);
 
-        $task = $this->taskService->findTaskForAuthorization($taskId);
-        Gate::authorize('create', [ \App\Models\Comment::class, $task ]);
+        Gate::authorize('create', [\App\Models\Comment::class, $task]);
 
-        $comment = $this->commentService->addComment($taskId, $request->all());
+        $comment = $this->commentService->addComment($task->id, $request->all());
 
         return response()->json(new CommentResource($comment), 201);
     }

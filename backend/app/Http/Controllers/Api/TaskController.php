@@ -86,13 +86,13 @@ class TaskController extends Controller
     }
 
     #[OA\Get(
-        path: '/api/tasks/{id}',
+        path: '/api/tasks/{task}',
         summary: 'Obter detalhes de uma tarefa',
         description: 'Retorna os detalhes de uma única tarefa, se ela pertencer ao usuário logado.',
         security: [['bearerAuth' => []]],
         tags: ['Tarefas'],
         parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+            new OA\Parameter(name: 'task', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
             new OA\Response(response: 200, description: 'Detalhes da tarefa'),
@@ -101,11 +101,9 @@ class TaskController extends Controller
             new OA\Response(response: 401, description: 'Não autorizado')
         ]
     )]
-    public function show(int $id): JsonResponse
+    public function show(\App\Models\Task $task): JsonResponse
     {
-        $task = \App\Models\Task::with(['comments.user'])
-            ->withoutGlobalScopes()
-            ->findOrFail($id);
+        $task->load(['comments.user']);
 
         Gate::authorize('view', $task);
 
@@ -113,13 +111,13 @@ class TaskController extends Controller
     }
 
     #[OA\Put(
-        path: '/api/tasks/{id}',
+        path: '/api/tasks/{task}',
         summary: 'Atualizar uma tarefa',
         description: 'Atualiza os campos de uma tarefa existente.',
         security: [['bearerAuth' => []]],
         tags: ['Tarefas'],
         parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+            new OA\Parameter(name: 'task', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
         ],
         requestBody: new OA\RequestBody(
             required: true,
@@ -140,23 +138,22 @@ class TaskController extends Controller
             new OA\Response(response: 401, description: 'Não autorizado')
         ]
     )]
-    public function update(UpdateTaskRequest $request, int $id): JsonResponse
+    public function update(UpdateTaskRequest $request, \App\Models\Task $task): JsonResponse
     {
-        $task = $this->taskService->findTaskForAuthorization($id);
         Gate::authorize('update', $task);
 
-        $this->taskService->updateTask($id, $request->validated());
+        $this->taskService->updateTask($task->id, $request->validated());
         return response()->json(['message' => 'Tarefa atualizada com sucesso']);
     }
 
     #[OA\Delete(
-        path: '/api/tasks/{id}',
+        path: '/api/tasks/{task}',
         summary: 'Excluir uma tarefa (Soft Delete)',
         description: 'Realiza a exclusão lógica da tarefa.',
         security: [['bearerAuth' => []]],
         tags: ['Tarefas'],
         parameters: [
-            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+            new OA\Parameter(name: 'task', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
         ],
         responses: [
             new OA\Response(response: 200, description: 'Tarefa excluída com sucesso'),
@@ -165,12 +162,11 @@ class TaskController extends Controller
             new OA\Response(response: 401, description: 'Não autorizado')
         ]
     )]
-    public function destroy(int $id): JsonResponse
+    public function destroy(\App\Models\Task $task): JsonResponse
     {
-        $task = $this->taskService->findTaskForAuthorization($id);
         Gate::authorize('delete', $task);
 
-        $this->taskService->deleteTask($id);
+        $this->taskService->deleteTask($task->id);
         return response()->json(['message' => 'Tarefa movida para a lixeira']);
     }
 }

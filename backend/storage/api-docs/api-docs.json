@@ -468,17 +468,17 @@
                 ]
             }
         },
-        "/api/tasks/{id}": {
+        "/api/tasks/{task}": {
             "get": {
                 "tags": [
                     "Tarefas"
                 ],
                 "summary": "Obter detalhes de uma tarefa",
                 "description": "Retorna os detalhes de uma única tarefa, se ela pertencer ao usuário logado.",
-                "operationId": "32c40e2d1129b80c1dcabd538df63a33",
+                "operationId": "bd73ed9e6d55cbc8a547d4aac67e2ea5",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "task",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -512,10 +512,10 @@
                 ],
                 "summary": "Atualizar uma tarefa",
                 "description": "Atualiza os campos de uma tarefa existente.",
-                "operationId": "c36c959b634c99e1e02ad2f3f2c36a2c",
+                "operationId": "a6b00b06431eae3ece4a210a52501fbd",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "task",
                         "in": "path",
                         "required": true,
                         "schema": {
@@ -577,10 +577,10 @@
                 ],
                 "summary": "Excluir uma tarefa (Soft Delete)",
                 "description": "Realiza a exclusão lógica da tarefa.",
-                "operationId": "d81cc7975ea62176b4ef8f74ed95168d",
+                "operationId": "5626a232c6ca6481a76585b267774c10",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "task",
                         "in": "path",
                         "required": true,
                         "schema": {

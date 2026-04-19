@@ -22,6 +22,16 @@ class Task extends Model
     }
 
     /**
+     * Retrieve the model for a bound value.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where($field ?? 'id', $value)
+            ->withoutGlobalScopes()
+            ->first();
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
