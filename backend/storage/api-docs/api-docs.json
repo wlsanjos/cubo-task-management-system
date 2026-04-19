@@ -322,6 +322,9 @@
                     "200": {
                         "description": "Detalhes da tarefa"
                     },
+                    "403": {
+                        "description": "Proibido - Você não é o dono desta tarefa"
+                    },
                     "404": {
                         "description": "Tarefa não encontrada"
                     },
