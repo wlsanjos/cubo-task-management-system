@@ -83,7 +83,10 @@ class TaskController extends Controller
     )]
     public function show(int $id): JsonResponse
     {
-        return response()->json($this->taskService->getTaskById($id));
+        $task = $this->taskService->findTaskForAuthorization($id);
+        $this->authorize('view', $task);
+
+        return response()->json($task);
     }
 
     #[OA\Put(
@@ -108,6 +111,7 @@ class TaskController extends Controller
         ),
         responses: [
             new OA\Response(response: 200, description: "Tarefa atualizada com sucesso"),
+            new OA\Response(response: 403, description: "Proibido - Você não é o dono desta tarefa"),
             new OA\Response(response: 404, description: "Tarefa não encontrada"),
             new OA\Response(response: 422, description: "Erro de validação"),
             new OA\Response(response: 401, description: "Não autorizado")
@@ -115,6 +119,9 @@ class TaskController extends Controller
     )]
     public function update(UpdateTaskRequest $request, int $id): JsonResponse
     {
+        $task = $this->taskService->findTaskForAuthorization($id);
+        $this->authorize('update', $task);
+
         $this->taskService->updateTask($id, $request->validated());
         return response()->json(['message' => 'Tarefa atualizada com sucesso']);
     }
@@ -130,12 +137,16 @@ class TaskController extends Controller
         ],
         responses: [
             new OA\Response(response: 200, description: "Tarefa excluída com sucesso"),
+            new OA\Response(response: 403, description: "Proibido - Você não é o dono desta tarefa"),
             new OA\Response(response: 404, description: "Tarefa não encontrada"),
             new OA\Response(response: 401, description: "Não autorizado")
         ]
     )]
     public function destroy(int $id): JsonResponse
     {
+        $task = $this->taskService->findTaskForAuthorization($id);
+        $this->authorize('delete', $task);
+
         $this->taskService->deleteTask($id);
         return response()->json(['message' => 'Tarefa movida para a lixeira']);
     }

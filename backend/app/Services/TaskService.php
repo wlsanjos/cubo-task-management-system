@@ -26,11 +26,20 @@ class TaskService
     }
 
     /**
-     * Get a specific task by ID, scoped to the authenticated user.
+     * Get a specific task by ID.
+     * Note: This will be filtered by the Global Scope unless we specify otherwise.
      */
     public function getTaskById(int $id): Task
     {
-        return Auth::user()->tasks()->findOrFail($id);
+        return Task::findOrFail($id);
+    }
+
+    /**
+     * Find a task even if it's not the current user's (for authorization checks).
+     */
+    public function findTaskForAuthorization(int $id): Task
+    {
+        return Task::withoutGlobalScopes()->findOrFail($id);
     }
 
     /**

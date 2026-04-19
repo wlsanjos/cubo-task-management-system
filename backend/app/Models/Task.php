@@ -14,6 +14,14 @@ class Task extends Model
     use HasFactory, SoftDeletes;
 
     /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new \App\Models\Scopes\UserTaskScope);
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

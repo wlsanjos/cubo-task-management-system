@@ -381,6 +381,9 @@
                     "200": {
                         "description": "Tarefa atualizada com sucesso"
                     },
+                    "403": {
+                        "description": "Proibido - Você não é o dono desta tarefa"
+                    },
                     "404": {
                         "description": "Tarefa não encontrada"
                     },
@@ -417,6 +420,9 @@
                 "responses": {
                     "200": {
                         "description": "Tarefa excluída com sucesso"
+                    },
+                    "403": {
+                        "description": "Proibido - Você não é o dono desta tarefa"
                     },
                     "404": {
                         "description": "Tarefa não encontrada"
