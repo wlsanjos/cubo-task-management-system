@@ -52,10 +52,15 @@ class TaskService
     }
 
     /**
-     * List all tasks for the authenticated user.
+     * List tasks for the authenticated user with filtering and pagination.
      */
-    public function listTasks(): Collection
+    public function listTasks(array $filters = [], int $perPage = 10): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Auth::user()->tasks()->latest()->get();
+        return Auth::user()->tasks()
+            ->status($filters['status'] ?? null)
+            ->dateRange($filters['start_date'] ?? null, $filters['end_date'] ?? null)
+            ->search($filters['search'] ?? null)
+            ->latest()
+            ->paginate($perPage);
     }
 }
