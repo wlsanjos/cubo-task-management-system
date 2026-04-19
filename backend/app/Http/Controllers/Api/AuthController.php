@@ -43,7 +43,8 @@ class AuthController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: "Dados inválidos")
+            new OA\Response(response: 422, description: "Dados inválidos"),
+            new OA\Response(response: 429, description: "Muitas requisições (Rate Limit: 10/minuto)")
         ]
     )]
     public function register(RegisterRequest $request): JsonResponse
@@ -90,7 +91,8 @@ class AuthController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: "Credenciais inválidas")
+            new OA\Response(response: 401, description: "Credenciais inválidas"),
+            new OA\Response(response: 429, description: "Muitas requisições (Rate Limit: 10/minuto)")
         ]
     )]
     public function login(LoginRequest $request): JsonResponse

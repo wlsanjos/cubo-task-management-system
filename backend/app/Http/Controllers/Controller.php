@@ -7,7 +7,7 @@ use OpenApi\Attributes as OA;
 #[OA\Info(
     title: "Cubo Task Management System API",
     version: "1.0.0",
-    description: "API para o sistema de gerenciamento de tarefas do Cubo. Inclui autenticação via Sanctum e operações CRUD de tarefas.",
+    description: "API para o sistema de gerenciamento de tarefas do Cubo. \n\n**Segurança**:\n- **Rate Limiting**: 60 requisições/minuto (geral) e 10 requisições/minuto (login/registro).\n- **Headers de Segurança**: Proteções XSS, clickjacking, MIME-sniffing e HSTS ativos.\n- **Autenticação**: Sanctum com operações CRUD de tarefas.",
     contact: new OA\Contact(email: "suporte@exemplo.com")
 )]
 #[OA\Server(

@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Cubo Task Management System API",
-        "description": "API para o sistema de gerenciamento de tarefas do Cubo. Inclui autenticação via Sanctum e operações CRUD de tarefas.",
+        "description": "API para o sistema de gerenciamento de tarefas do Cubo. \n\n**Segurança**:\n- **Rate Limiting**: 60 requisições/minuto (geral) e 10 requisições/minuto (login/registro).\n- **Headers de Segurança**: Proteções XSS, clickjacking, MIME-sniffing e HSTS ativos.\n- **Autenticação**: Sanctum com operações CRUD de tarefas.",
         "contact": {
             "email": "suporte@exemplo.com"
         },
@@ -85,6 +85,9 @@
                     },
                     "422": {
                         "description": "Dados inválidos"
+                    },
+                    "429": {
+                        "description": "Muitas requisições (Rate Limit: 10/minuto)"
                     }
                 }
             }
@@ -148,6 +151,9 @@
                     },
                     "401": {
                         "description": "Credenciais inválidas"
+                    },
+                    "429": {
+                        "description": "Muitas requisições (Rate Limit: 10/minuto)"
                     }
                 }
             }
