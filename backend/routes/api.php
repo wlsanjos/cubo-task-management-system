@@ -20,4 +20,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Comentários
     Route::get('/tasks/{task}/comments', [\App\Http\Controllers\Api\CommentController::class, 'index']);
     Route::post('/tasks/{task}/comments', [\App\Http\Controllers\Api\CommentController::class, 'store']);
+
+    // Anexos
+    Route::get('/tasks/{task}/attachments', [\App\Http\Controllers\Api\TaskAttachmentController::class, 'index']);
+    Route::post('/tasks/{task}/attachments', [\App\Http\Controllers\Api\TaskAttachmentController::class, 'store']);
+    Route::get('/tasks/{task}/attachments/{attachment}', [\App\Http\Controllers\Api\TaskAttachmentController::class, 'show']);
+    Route::delete('/tasks/{task}/attachments/{attachment}', [\App\Http\Controllers\Api\TaskAttachmentController::class, 'destroy']);
 });
