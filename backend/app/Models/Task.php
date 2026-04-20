@@ -64,6 +64,11 @@ class Task extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class);
+    }
+
     /**
      * Get the comments for the task.
      */
