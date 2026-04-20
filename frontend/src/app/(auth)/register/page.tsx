@@ -46,7 +46,8 @@ export default function RegisterPage() {
       const response = await registerService(data)
       setAuth(response)
       toast.success("Conta criada com sucesso!")
-      router.push("/dashboard")
+      await new Promise(resolve => setTimeout(resolve, 100))
+      window.location.href = "/dashboard"
     } catch (error) {
       const message = error instanceof Error ? error.message : "Erro ao criar conta"
       toast.error(message)

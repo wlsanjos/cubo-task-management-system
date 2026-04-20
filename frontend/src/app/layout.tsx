@@ -1,9 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/hooks/useAuth"
-import { ThemeProvider } from "@/components/providers/theme-provider"
-import { Toaster } from "@/components/ui/sonner"
+import { Providers } from "@/components/providers"
 
 const inter = Inter({
   variable: "--font-sans",
@@ -23,17 +21,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning className={inter.variable}>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthProvider>
-            {children}
-            <Toaster position="top-right" richColors />
-          </AuthProvider>
-        </ThemeProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   )

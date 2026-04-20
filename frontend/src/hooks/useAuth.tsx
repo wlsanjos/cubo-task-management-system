@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = (data: AuthResponse) => {
-    setToken(data.token)
+    setToken(data.token || null)
     setUser(data.user)
   }
 

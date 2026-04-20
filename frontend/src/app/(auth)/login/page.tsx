@@ -40,7 +40,8 @@ export default function LoginPage() {
       const response = await loginService(data)
       setAuth(response)
       toast.success("Bem-vindo de volta!")
-      router.push("/dashboard")
+      await new Promise(resolve => setTimeout(resolve, 100))
+      window.location.href = "/dashboard"
     } catch (error) {
       const message = error instanceof Error ? error.message : "Credenciais inválidas"
       toast.error(message)

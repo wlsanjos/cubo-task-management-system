@@ -22,7 +22,8 @@ export interface AuthResponse {
     name: string
     email: string
   }
-  token: string
+  token?: string
+  access_token?: string
 }
 
 export interface ApiError {
@@ -30,38 +31,52 @@ export interface ApiError {
   errors?: Record<string, string[]>
 }
 
-async function handleError(error: unknown): Promise<ApiError> {
-  if (error instanceof AxiosError && error.response?.data) {
-    const data = error.response.data as ApiError
-    if (data.errors) {
+function handleApiError(error: unknown): ApiError {
+  if (error instanceof AxiosError) {
+    if (error.response?.status === 401 || error.response?.status === 422) {
+      return { message: "E-mail ou senha incorretos. Tente novamente." }
+    }
+    const data = error.response?.data as ApiError
+    if (data?.errors) {
       const firstError = Object.values(data.errors).flat()[0]
       return { message: firstError || data.message }
     }
-    return { message: data.message }
+    if (data?.message) {
+      return { message: data.message }
+    }
   }
   return { message: "Erro de conexão. Tente novamente." }
 }
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
   try {
-    const { data } = await api.post<AuthResponse>("/login", payload)
-    localStorage.setItem("token", data.token)
+    const response = await api.post<AuthResponse>("/login", payload)
+    const data = response.data
+    const token = data.token || data.access_token || ""
+
+    console.log(data.access_token)
+
+    localStorage.setItem("token", token)
     localStorage.setItem("user", JSON.stringify(data.user))
     return data
   } catch (error) {
-    const err = await handleError(error)
-    throw new Error(err.message)
+    const err = handleApiError(error)
+    const errMsg = err.message
+    throw new Error(errMsg)
   }
 }
 
 export async function register(payload: RegisterPayload): Promise<AuthResponse> {
   try {
-    const { data } = await api.post<AuthResponse>("/register", payload)
-    localStorage.setItem("token", data.token)
+    const response = await api.post<AuthResponse>("/register", payload)
+    const data = response.data
+    const token = data.token || data.access_token || ""
+
+    localStorage.setItem("token", token)
     localStorage.setItem("user", JSON.stringify(data.user))
     return data
   } catch (error) {
-    const err = await handleError(error)
+    const err = handleApiError(error)
     throw new Error(err.message)
   }
 }
