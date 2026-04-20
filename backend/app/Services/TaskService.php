@@ -93,4 +93,16 @@ class TaskService
             'overdue_tasks' => $overdueTasks,
         ];
     }
+
+    public function uploadAttachment(Task $task, \Illuminate\Http\UploadedFile $file): \App\Models\Attachment
+    {
+        $path = $file->store('attachments', 'public');
+
+        return $task->attachments()->create([
+            'file_path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
+    }
 }
