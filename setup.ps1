@@ -7,20 +7,19 @@ if (-not (Test-Path "backend\.env")) {
 }
 
 # 2. Subir os containers
+# O Docker Compose ja aguarda o banco estar saudavel
 docker-compose up -d --build
 
 Write-Host "Instalando dependencias do Backend (Composer)..." -ForegroundColor Yellow
 docker-compose exec api composer install
 
-Write-Host "Ajustando permissoes de storage e cache..." -ForegroundColor Yellow
-docker-compose exec api chown -R www-data:www-data storage bootstrap/cache
-docker-compose exec api chmod -R 775 storage bootstrap/cache
+Write-Host "Ajustando permissoes de storage e cache (Urgente)..." -ForegroundColor Yellow
+docker-compose exec api chmod -R 777 storage bootstrap/cache
 
 Write-Host "Gerando chave de aplicacao Laravel..." -ForegroundColor Yellow
 docker-compose exec api php artisan key:generate --ansi
 
 Write-Host "Executando migracoes do Banco de Dados..." -ForegroundColor Yellow
-Start-Sleep -Seconds 5
 docker-compose exec api php artisan migrate --force
 
 Write-Host "Instalando dependencias do Frontend (NPM)..." -ForegroundColor Yellow

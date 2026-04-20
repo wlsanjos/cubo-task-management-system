@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM php:8.4-fpm
 
 # Instalação de dependências do sistema
 RUN apt-get update && apt-get install -y \
@@ -20,6 +20,9 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
 # Instalação do Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Configuração customizada do PHP
+COPY php.ini /usr/local/etc/php/conf.d/custom-php.ini
 
 # Definição do diretório de trabalho
 WORKDIR /var/www
