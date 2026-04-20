@@ -112,7 +112,9 @@ class TaskController extends Controller
     public function store(StoreTaskRequest $request): JsonResponse
     {
         $task = $this->taskService->createTask($request->validated());
-        return response()->json($task, 201);
+        return (new \App\Http\Resources\TaskResource($task))
+            ->response()
+            ->setStatusCode(201);
     }
 
     #[OA\Get(

@@ -37,8 +37,8 @@ class TaskTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-                 ->assertJsonPath('title', 'Nova Tarefa de Teste')
-                 ->assertJsonPath('status', 'pendente');
+                 ->assertJsonPath('data.title', 'Nova Tarefa de Teste')
+                 ->assertJsonPath('data.status', 'pendente');
 
         $this->assertDatabaseHas('tasks', [
             'user_id' => $user->id,

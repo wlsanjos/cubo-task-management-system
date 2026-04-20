@@ -60,7 +60,10 @@ class TaskService
             ->status($filters['status'] ?? null)
             ->dateRange($filters['start_date'] ?? null, $filters['end_date'] ?? null)
             ->search($filters['search'] ?? null)
-            ->latest()
+            ->when(isset($filters['start_date']) || isset($filters['end_date']), 
+                fn($q) => $q->orderBy('due_date', 'asc'),
+                fn($q) => $q->latest()
+            )
             ->paginate($perPage);
     }
 

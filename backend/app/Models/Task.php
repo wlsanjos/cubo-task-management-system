@@ -57,6 +57,14 @@ class Task extends Model
     }
 
     /**
+     * Prepare a date for array / JSON serialization.
+     */
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
      * Get the user that owns the task.
      */
     public function user(): BelongsTo
@@ -90,8 +98,8 @@ class Task extends Model
      */
     public function scopeDateRange($query, ?string $start, ?string $end)
     {
-        return $query->when($start, fn($q) => $q->whereDate('created_at', '>=', $start))
-            ->when($end, fn($q) => $q->whereDate('created_at', '<=', $end));
+        return $query->when($start, fn($q) => $q->whereDate('due_date', '>=', $start))
+            ->when($end, fn($q) => $q->whereDate('due_date', '<=', $end));
     }
 
     /**
