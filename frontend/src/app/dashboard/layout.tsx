@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks"
 import { Button } from "@/components/ui/button"
+import { LogOut, Plus } from "lucide-react"
 
 const navItems = [
   {
@@ -100,68 +101,70 @@ export default function DashboardLayout({
     const currentPath = navItems.find(item => item.href === pathname)
     return currentPath?.label || "Dashboard"
   }
-
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-surface">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-64 bg-slate-900 text-white flex flex-col p-4 z-50 shadow-2xl shadow-slate-900/10">
-        <div className="mb-8 px-2">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+      <aside className="fixed left-0 top-0 h-screen w-64 bg-primary-container text-white flex flex-col p-6 z-50 shadow-2xl shadow-primary-container/20">
+        <div className="mb-12">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
               </svg>
             </div>
-            <span className="font-black tracking-tighter text-xl">Orchestrator</span>
+            <div>
+              <span className="font-black tracking-tight text-xl block leading-none text-white">ORCHESTRATOR</span>
+              <span className="sidebar-label mt-1 block">Enterprise Suite</span>
+            </div>
           </Link>
-          <span className="text-xs uppercase tracking-widest opacity-60 block mt-1">Enterprise Tier</span>
         </div>
 
-        <nav className="flex-1 flex flex-col gap-1">
+        <nav className="flex-1 flex flex-col gap-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || 
+            const isActive = pathname === item.href ||
               (item.href !== "/dashboard" && pathname.startsWith(item.href))
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-sm",
+                  "flex items-center gap-4 px-4 py-3 rounded-xl transition-all grow-0 group",
                   isActive
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:text-white hover:bg-white/5"
+                    ? "bg-white/15 text-white font-bold shadow-sm"
+                    : "text-blue-50/60 hover:text-white hover:bg-white/5"
                 )}
               >
-                {item.icon}
-                <span className="uppercase tracking-wider text-xs">{item.label}</span>
+                <span className={cn("w-5 h-5 transition-colors", isActive ? "text-white" : "text-blue-100/30 group-hover:text-white/60")}>
+                  {item.icon}
+                </span>
+                <span className={cn("label-md text-inherit lowercase first-letter:uppercase tracking-tight", isActive ? "sidebar-text-active" : "sidebar-text")}>
+                  {item.label}
+                </span>
               </Link>
             )
           })}
         </nav>
 
-        <div className="mt-4">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-white/70 hover:text-white hover:bg-white/5"
-            onClick={handleLogout}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-3">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" x2="9" y1="12" y2="12" />
-            </svg>
-            <span className="uppercase tracking-wider text-xs">Sair</span>
-          </Button>
-        </div>
+        {/* Remove create button from here */}
 
-        <div className="mt-auto pt-4 border-t border-white/10">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name || "Usuário"}</p>
-              <p className="text-xs text-white/50 truncate">{user?.email || ""}</p>
+        <div className="mt-auto pt-8 space-y-4">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-blue-50/60 hover:text-white hover:bg-white/5 transition-all group"
+          >
+            <LogOut className="w-5 h-5 text-blue-100/30 group-hover:text-white/60 transition-colors" />
+            <span className="label-md lowercase first-letter:uppercase tracking-tight">Sair do Sistema</span>
+          </button>
+
+          <div className="pt-4 border-t border-white/5">
+            <div className="flex items-center gap-4 px-2">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold border border-white/5 overflow-hidden">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold truncate text-white uppercase tracking-tight">{user?.name || "Usuário"}</p>
+                <p className="text-[10px] text-white/40 truncate font-medium uppercase tracking-widest leading-none mt-1">{user?.role || "Project Lead"}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -170,44 +173,54 @@ export default function DashboardLayout({
       {/* Main Content */}
       <main className="ml-64 min-h-screen">
         {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8">
-          <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold tracking-tight text-slate-800">{getPageTitle()}</h1>
-            <nav className="hidden md:flex gap-6">
-              <a className="text-sm tracking-tight text-blue-700 font-semibold border-b-2 border-blue-700 pb-1" href="#">Dashboard</a>
-              <a className="text-sm tracking-tight text-slate-500 hover:text-slate-800 transition-colors" href="#">Tarefas</a>
-              <a className="text-sm tracking-tight text-slate-500 hover:text-slate-800 transition-colors" href="#">Analytics</a>
-              <a className="text-sm tracking-tight text-slate-500 hover:text-slate-800 transition-colors" href="#">Equipe</a>
-            </nav>
+        <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl h-20 flex items-center justify-between px-10">
+          <div className="flex-1 max-w-xl">
+            <div className="relative group">
+              <svg xmlns="http://www.w3.org/2000/svg" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant group-focus-within:text-primary transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+              </svg>
+              <input
+                placeholder="Search tasks, members or projects..."
+                className="w-full bg-surface-container-low h-12 pl-12 pr-4 rounded-xl text-sm font-medium focus:bg-surface-container-lowest transition-all placeholder:text-on-surface-variant/50"
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex gap-2">
-              <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all">
+
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <button className="p-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-xl transition-all relative">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                   <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
                 </svg>
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-surface" />
               </button>
-              <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-all">
+              <button className="p-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-xl transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg>
               </button>
             </div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md shadow-blue-600/20">
-              Criar Tarefa
-            </button>
-            <div className="w-8 h-8 rounded-full bg-blue-100 overflow-hidden">
-              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-blue-900">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
+
+            <div className="flex items-center gap-3 pl-6 border-l border-on-surface-variant/10">
+              <div className="text-right">
+                <p className="text-sm font-bold text-on-surface leading-tight">{user?.name || "Arthur Morgan"}</p>
+                <p className="label-md text-[9px] mt-0.5">{user?.name || "Project Lead"}</p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-primary-container overflow-hidden p-0.5 shadow-sm border border-on-surface-variant/10">
+                <div className="w-full h-full bg-slate-200 rounded-[9px] flex items-center justify-center overflow-hidden">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-full h-full text-slate-400 p-1">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <div className="p-8">
+        <div className="p-10 animate-fade-in-up">
           {children}
         </div>
       </main>

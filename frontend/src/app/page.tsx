@@ -76,7 +76,7 @@ export default function Home() {
               <Button variant="ghost" className="hidden sm:flex">Entrar</Button>
             </Link>
             <Link href="/register">
-              <Button className="shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
+              <Button className="text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300">
                 Começar Agora
               </Button>
             </Link>
@@ -110,7 +110,7 @@ export default function Home() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
               <Link href="/register">
-                <Button size="lg" className="h-14 px-8 text-lg gap-3 shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:scale-105 transition-all duration-300">
+                <Button size="lg" className="h-14 px-8 text-lg text-white gap-3 shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:scale-105 transition-all duration-300">
                   Criar Conta Grátis
                   <ArrowRight className="w-5 h-5" />
                 </Button>

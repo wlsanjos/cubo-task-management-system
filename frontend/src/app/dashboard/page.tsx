@@ -2,10 +2,14 @@
 
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 import { getTasks, getStats, type TaskPtBr, type TaskStats, type TaskFilters, mapTaskFromApi, type TaskStatusPtBr } from "@/services/task.service"
+import { format } from "date-fns"
 import { useAuth } from "@/hooks"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { TaskForm } from "@/components/shared/task-form"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Search,
   MoreVertical,
@@ -13,7 +17,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Calendar,
+  Layout,
+  Code2,
+  FileText,
+  BarChart,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const mockTasks: TaskPtBr[] = [
   {
@@ -77,13 +86,14 @@ const mockStats: TaskStats = {
   completion_rate: 16.67,
 }
 
-const statusConfig: Record<TaskStatusPtBr, { label: string; bgColor: string; textColor: string; borderColor: string; icon: React.ReactNode }> = {
+const statusConfig: Record<TaskStatusPtBr, { label: string; bgColor: string; textColor: string; borderColor: string; icon: React.ReactNode; dotColor: string }> = {
   pendente: {
     label: "Pendente",
     bgColor: "bg-amber-50",
     textColor: "text-amber-700",
     borderColor: "border-amber-200",
     icon: <Clock className="w-3.5 h-3.5" />,
+    dotColor: "bg-amber-500",
   },
   em_andamento: {
     label: "Em Andamento",
@@ -91,6 +101,7 @@ const statusConfig: Record<TaskStatusPtBr, { label: string; bgColor: string; tex
     textColor: "text-blue-700",
     borderColor: "border-blue-200",
     icon: <AlertCircle className="w-3.5 h-3.5" />,
+    dotColor: "bg-blue-500",
   },
   concluida: {
     label: "Concluída",
@@ -98,21 +109,8 @@ const statusConfig: Record<TaskStatusPtBr, { label: string; bgColor: string; tex
     textColor: "text-emerald-700",
     borderColor: "border-emerald-200",
     icon: <CheckCircle2 className="w-3.5 h-3.5" />,
+    dotColor: "bg-emerald-500",
   },
-}
-
-function StatsCard({ title, value, icon, bgClass }: { title: string; value: number; icon: React.ReactNode; bgClass: string }) {
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border-0">
-      <div className="flex justify-between items-start">
-        <div className={`p-2 rounded-lg ${bgClass}`}>
-          {icon}
-        </div>
-        <span className="text-3xl font-bold text-[#191c1e]">{value}</span>
-      </div>
-      <p className="text-xs uppercase tracking-widest text-[#43474e] mt-4 font-medium">{title}</p>
-    </div>
-  )
 }
 
 function TaskSkeleton() {
@@ -128,9 +126,11 @@ function TaskSkeleton() {
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { user } = useAuth()
   const [showDateFilter, setShowDateFilter] = useState(false)
   const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({})
+  const [showTaskForm, setShowTaskForm] = useState(false)
 
   const [filters, setFilters] = useState<TaskFilters>({
     search: "",
@@ -138,6 +138,9 @@ export default function DashboardPage() {
     start_date: undefined,
     end_date: undefined,
     page: 1,
+    per_page: 5,
+    sort_by: "created_at",
+    order: "desc",
   })
 
   const { data: stats } = useQuery<TaskStats>({
@@ -153,10 +156,7 @@ export default function DashboardPage() {
   })
 
   const tasksFromApi = tasksData?.data?.map(mapTaskFromApi) || mockTasks
-  console.log("tasksFromApi[0]:", tasksFromApi[0])
-
   const tasks = tasksFromApi
-
   const statsData = stats || mockStats
   const meta = tasksData?.meta
 
@@ -189,276 +189,237 @@ export default function DashboardPage() {
     setShowDateFilter(false)
   }
 
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return "Bom dia"
-    if (hour < 18) return "Boa tarde"
-    return "Boa noite"
-  }
-
   return (
-    <div className="space-y-8">
+    <div className="max-w-7xl mx-auto space-y-12">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-        <div className="space-y-2">
-          <h2 className="text-4xl font-bold tracking-tight text-slate-800">
-            {getGreeting()}, {user?.name ? user.name.split(" ")[0] : "Usuário"}
-          </h2>
-          <p className="text-slate-500 max-w-lg">
-            Seu workspace está {statsData.completion_rate || 0}% otimizado hoje. Você tem {statsData.pending_tasks} tarefas de alta prioridade requerendo atenção imediata.
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 rounded-xl flex items-center gap-4 border border-slate-200">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center text-white shadow-md">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-            </div>
-            <div>
-              <div className="text-xs font-bold uppercase tracking-widest text-slate-500">Eficiência</div>
-              <div className="text-xl font-bold text-slate-700">{stats?.completion_rate || 0}%</div>
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col space-y-4">
+        <h1 className="display-md text-on-surface">Dashboard Overview</h1>
+        <p className="text-on-surface-variant max-w-2xl font-medium leading-relaxed">
+          Gestão centralizada de fluxos de trabalho e métricas de desempenho da equipe em tempo real. Seu workspace está <span className="text-primary font-bold">{statsData.completion_rate || 0}% otimizado</span> hoje.
+        </p>
       </div>
 
-      {/* Stats Cards - Bento Grid Style */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {/* Pending Card */}
-        <div className="col-span-1 bg-gradient-to-br from-amber-50 to-amber-100/50 p-6 rounded-xl space-y-4 shadow-sm border border-amber-100">
+      {/* Stats Cards - Premium Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="premium-card space-y-6">
           <div className="flex justify-between items-start">
-            <div className="p-2 bg-white rounded-lg shadow-sm">
-              <Clock className="w-5 h-5 text-amber-600" />
+            <div className="w-12 h-12 bg-surface-container-low rounded-xl flex items-center justify-center">
+              <FileText className="w-6 h-6 text-on-surface-variant" />
             </div>
-            <span className="text-2xl font-bold text-amber-700">{statsData.pending_tasks}</span>
+            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md tracking-tight">+12%</span>
           </div>
           <div>
-            <h3 className="text-xs uppercase tracking-widest text-amber-700/80">Pendente</h3>
-            <p className="text-sm text-amber-600/80">Aguardando aprovação</p>
+            <p className="label-md mb-2">Total de Tarefas</p>
+            <p className="text-4xl font-extrabold text-on-surface tracking-tighter">{statsData.total_tasks}</p>
           </div>
         </div>
 
-        {/* In Progress Card */}
-        <div className="col-span-1 bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 rounded-xl space-y-4 shadow-sm border border-slate-200">
+        <div className="premium-card bg-[#fff7f5] space-y-6">
           <div className="flex justify-between items-start">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-blue-600" />
+            <div className="w-12 h-12 bg-tertiary-container rounded-xl flex items-center justify-center">
+              <Clock className="w-6 h-6 text-on-tertiary-container" />
             </div>
-            <span className="text-2xl font-bold text-slate-700">{statsData.in_progress_tasks}</span>
+            <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-1 rounded-md tracking-tight">-5%</span>
           </div>
           <div>
-            <h3 className="text-xs uppercase tracking-widest text-slate-600">Em Andamento</h3>
-            <p className="text-sm text-slate-500">Sendo executada</p>
+            <p className="label-md mb-2 text-tertiary-container/70">Pendentes</p>
+            <p className="text-4xl font-extrabold text-[#391303] tracking-tighter">{statsData.pending_tasks}</p>
           </div>
         </div>
 
-        {/* Completed Card - Larger */}
-        <div className="col-span-1 lg:col-span-2 bg-gradient-to-br from-blue-600 to-blue-800 p-6 rounded-xl space-y-4 text-white relative overflow-hidden shadow-lg">
-          <div className="absolute inset-0 bg-white/5 backdrop-blur-sm opacity-0 hover:opacity-100 transition-opacity" />
-          <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex justify-between items-start">
-              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                <CheckCircle2 className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-3xl font-bold text-white">{statsData.completed_tasks}</span>
+        <div className="premium-card bg-[#f2f8ff] space-y-6">
+          <div className="flex justify-between items-start">
+            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+              <BarChart className="w-6 h-6 text-blue-700" />
             </div>
-            <div className="pt-6">
-              <h3 className="text-xs uppercase tracking-widest text-blue-100">Tarefas Concluídas</h3>
-              <p className="text-lg font-medium text-white">{statsData.completion_rate}% de conclusão</p>
-            </div>
+            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md tracking-tight">+24%</span>
           </div>
-          <div className="absolute -right-4 -bottom-4 opacity-10">
-            <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z" />
-            </svg>
+          <div>
+            <p className="label-md mb-2 text-blue-800/70">Em Andamento</p>
+            <p className="text-4xl font-extrabold text-blue-900 tracking-tighter">{statsData.in_progress_tasks}</p>
+          </div>
+        </div>
+
+        <div className="premium-card space-y-6">
+          <div className="flex justify-between items-start">
+            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+            </div>
+            <span className="text-[10px] font-bold text-on-surface-variant bg-surface-container-low px-2 py-1 rounded-md tracking-tight">89%</span>
+          </div>
+          <div>
+            <p className="label-md mb-2">Concluídas</p>
+            <p className="text-4xl font-extrabold text-on-surface tracking-tighter">{statsData.completed_tasks}</p>
           </div>
         </div>
       </div>
 
       {/* Task List Section */}
-      <div className="bg-white rounded-xl p-8 space-y-6 shadow-sm border border-slate-200">
-        {/* Filters & Search */}
-        <div className="flex flex-col lg:flex-row justify-between gap-6">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              placeholder="Buscar tarefas, equipes ou status..."
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm text-slate-800 placeholder-slate-400 transition-all"
-              value={filters.search}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
+      <div className="bg-surface-container-lowest rounded-[1.5rem] p-10 space-y-10 shadow-sm">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 border-b border-surface-container-low pb-6">
+          <div className="flex gap-4 bg-surface-container-low p-1.5 rounded-xl shadow-inner">
+            <button
+              onClick={() => handleStatusFilter(undefined)}
+              className={cn("px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", filters.status === undefined ? "bg-primary-container text-white shadow-lg" : "text-on-surface-variant hover:text-on-surface")}
+            > Todos </button>
+            <button
+              onClick={() => handleStatusFilter("pendente")}
+              className={cn("px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", filters.status === 'pendente' ? "bg-tertiary-container text-white shadow-lg" : "text-on-surface-variant hover:text-on-surface")}
+            > Pendentes </button>
+            <button
+              onClick={() => handleStatusFilter("em_andamento")}
+              className={cn("px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all", filters.status === 'em_andamento' ? "bg-primary-container text-white shadow-lg" : "text-on-surface-variant hover:text-on-surface")}
+            > Em Foco </button>
           </div>
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 lg:pb-0">
-            <div className="flex bg-slate-50 border border-slate-200 p-1 rounded-xl">
-              <button
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${filters.status === undefined ? 'bg-white shadow-sm text-blue-700' : 'text-slate-500 hover:text-slate-800'}`}
-                onClick={() => handleStatusFilter(undefined)}
-              >
-                Todas
-              </button>
-              <button
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${filters.status === 'pendente' ? 'bg-white shadow-sm text-amber-600' : 'text-slate-500 hover:text-slate-800'}`}
-                onClick={() => handleStatusFilter("pendente")}
-              >
-                Pendente
-              </button>
-              <button
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${filters.status === 'em_andamento' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
-                onClick={() => handleStatusFilter("em_andamento")}
-              >
-                Em Andamento
-              </button>
-              <button
-                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${filters.status === 'concluida' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-500 hover:text-slate-800'}`}
-                onClick={() => handleStatusFilter("concluida")}
-              >
-                Concluída
-              </button>
-            </div>
-            <div className="relative">
-              <button
-                onClick={() => setShowDateFilter(!showDateFilter)}
-                className="flex items-center gap-2 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-all"
-              >
-                <Calendar className="w-4 h-4" />
-                Período
-              </button>
-              {showDateFilter && (
-                <div className="absolute top-full mt-2 right-0 bg-white p-4 rounded-xl shadow-lg border z-50 min-w-[280px]">
-                  <div className="space-y-3">
-                    <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Data Início</label>
-                      <Input
-                        type="date"
-                        className="mt-1"
-                        value={dateRange.start || ""}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase">Data Fim</label>
-                      <Input
-                        type="date"
-                        className="mt-1"
-                        value={dateRange.end || ""}
-                        onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                      />
-                    </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button size="sm" variant="outline" onClick={clearDateFilter} className="flex-1 border-slate-200 text-slate-600 hover:bg-slate-50">
-                        Limpar
-                      </Button>
-                      <Button size="sm" onClick={handleDateFilter} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 border-none">
-                        Aplicar
-                      </Button>
-                    </div>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowDateFilter(!showDateFilter)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-surface-container-low hover:bg-surface-container-low/80 rounded-xl text-[10px] font-bold uppercase tracking-widest text-on-surface-variant transition-all"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              Data
+            </button>
+            {showDateFilter && (
+              <div className="absolute top-full lg:right-0 mt-3 bg-surface-container-lowest p-6 rounded-2xl shadow-2xl border border-surface-container-low z-50 min-w-[320px]">
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="label-md">Data Início</label>
+                    <DatePicker 
+                      date={filters.start_date ? new Date(filters.start_date + "T00:00:00") : undefined}
+                      setDate={(d) => setFilters(prev => ({ ...prev, start_date: d ? format(d, 'yyyy-MM-dd') : undefined, page: 1 }))}
+                      placeholder="De..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="label-md">Data Fim</label>
+                    <DatePicker 
+                      date={filters.end_date ? new Date(filters.end_date + "T00:00:00") : undefined}
+                      setDate={(d) => setFilters(prev => ({ ...prev, end_date: d ? format(d, 'yyyy-MM-dd') : undefined, page: 1 }))}
+                      placeholder="Até..."
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4 border-t border-surface-container-low pt-6">
+                    <Button 
+                      variant="ghost"
+                      onClick={() => {
+                        setFilters(prev => ({ ...prev, start_date: undefined, end_date: undefined, page: 1 }))
+                        setShowDateFilter(false)
+                      }} 
+                      className="flex-1 h-12 bg-surface-container-low text-on-surface hover:bg-surface-container-low/80 border-none rounded-xl font-bold shadow-none"
+                    >
+                      Limpar
+                    </Button>
+                    <Button 
+                      onClick={() => setShowDateFilter(false)} 
+                      className="flex-1 h-12 signature-gradient text-white rounded-xl font-bold shadow-md shadow-primary/20 border-none"
+                    >
+                      Fechar
+                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Task Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-6 text-xs font-bold uppercase tracking-widest text-slate-500">
-          <div className="col-span-5">Detalhes da Tarefa</div>
-          <div className="col-span-2">Responsável</div>
-          <div className="col-span-2">Prazo</div>
-          <div className="col-span-2">Status</div>
-          <div className="col-span-1"></div>
-        </div>
+        {/* Task Table */}
+        <div className="space-y-2">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-6 px-4 pb-4 border-b border-surface-container-low">
+            <div className="col-span-5 label-md text-on-surface-variant/70">Título da Tarefa</div>
+            <div className="col-span-3 label-md text-on-surface-variant/70">Responsável</div>
+            <div className="col-span-2 label-md text-on-surface-variant/70">Prazo Final</div>
+            <div className="col-span-2 label-md text-on-surface-variant/70">Status</div>
+          </div>
 
-        {/* Tasks */}
-        <div className="space-y-3">
-          {tasksLoading ? (
-            <>
-              <TaskSkeleton />
-              <TaskSkeleton />
-              <TaskSkeleton />
-            </>
-          ) : tasks.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-slate-500">Nenhuma tarefa encontrada.</p>
-            </div>
-          ) : (
-            tasks.map((task) => {
-              const status = statusConfig[task.status as TaskStatusPtBr] || {
-                label: task.status,
-                color: "bg-gray-100 text-gray-700 border-gray-200",
-                bgColor: "bg-gray-100",
-                textColor: "text-gray-700",
-                dotColor: "bg-gray-500",
-              }
-              return (
-                <div
-                  key={task.id}
-                  className="grid grid-cols-12 gap-4 px-6 py-5 bg-white rounded-xl items-center hover:bg-slate-50 transition-all cursor-pointer border border-slate-100 hover:border-slate-300"
-                >
-                  <div className="col-span-5 flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center border ${status.bgColor} ${status.borderColor}`}>
-                      {status.icon}
+          <div className="space-y-1">
+            {tasksLoading ? (
+              [...Array(4)].map((_, i) => <TaskSkeleton key={i} />)
+            ) : (
+              tasks.map((task) => {
+                const status = statusConfig[task.status as TaskStatusPtBr]
+                return (
+                  <div
+                    key={task.id}
+                    onClick={() => router.push(`/dashboard/task/${task.id}`)}
+                    className="grid grid-cols-12 gap-6 px-4 py-4 rounded-xl items-center hover:bg-surface-container-low transition-all cursor-pointer group"
+                  >
+                    <div className="col-span-5 flex items-center gap-4">
+                      <div className={cn("w-2 h-2 rounded-full flex-shrink-0", status?.dotColor || "bg-slate-300")} />
+                      <div className="font-semibold text-on-surface text-sm truncate">{task.title}</div>
                     </div>
-                    <div>
-                      <div className="font-semibold text-slate-800">{task.title}</div>
-                      <div className="text-xs text-slate-500 mt-1 line-clamp-1">
-                        {task.description}
+
+                    <div className="col-span-3 flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center overflow-hidden flex-shrink-0 text-white">
+                        <span className="text-[10px] font-bold">
+                          {task.assignees?.[0]?.name?.charAt(0) || "U"}
+                        </span>
                       </div>
+                      <span className="text-sm font-medium text-on-surface truncate">{task.assignees?.[0]?.name || "Usuário"}</span>
+                    </div>
+
+                    <div className="col-span-2 text-sm font-medium text-on-surface-variant">
+                      {task.due_date ? new Date(task.due_date).toLocaleDateString("pt-BR", { day: 'numeric', month: 'short', year: 'numeric' }) : "---"}
+                    </div>
+
+                    <div className="col-span-2 flex items-center justify-between">
+                      <span className={cn(
+                        "px-3 py-1 rounded-[6px] text-[9px] font-bold uppercase tracking-widest leading-none block w-fit",
+                        task.status === 'concluida' ? "bg-[#eaf5ef] text-[#2c7a51]" :
+                          task.status === 'em_andamento' ? "bg-[#e8effd] text-[#2c5282]" :
+                            "bg-[#e1e2e3] text-[#43474e]"
+                      )}>
+                        {status?.label || task.status}
+                      </span>
+                      <button className="opacity-0 group-hover:opacity-100 p-1 text-on-surface-variant hover:text-on-surface transition-all">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="col-span-2 flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-blue-700">
-                      {task.assignees?.[0]?.name?.charAt(0) || "U"}
-                    </div>
-                  </div>
-                  <div className="col-span-2 text-sm text-slate-500 font-medium">
-                    {new Date(task.due_date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                  </div>
-                  <div className="col-span-2 flex items-center justify-start">
-                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${status.bgColor} ${status.textColor} ${status.borderColor}`}>
-                      {status.icon}
-                      {status.label}
-                    </span>
-                  </div>
-                  <div className="col-span-1 flex justify-end">
-                    <button className="text-slate-400 hover:text-slate-800 transition-colors">
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )
-            })
-          )}
+                )
+              })
+            )}
+          </div>
         </div>
 
-        {/* Pagination */}
-        {meta && meta.last_page > 1 && (
-          <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-            <p className="text-sm text-slate-500 font-medium tracking-tight">
-              Mostrando {((meta.current_page - 1) * meta.per_page) + 1} a{" "}
-              {Math.min(meta.current_page * meta.per_page, meta.total)} de {meta.total} tarefas
-            </p>
+        {/* Pagination Footer */}
+        <div className="flex items-center justify-between pt-6">
+          <p className="text-xs text-on-surface-variant font-medium">Exibindo {tasks.length} de {meta?.total || 128} tarefas</p>
+          {meta && meta.last_page > 1 && (
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 disabled={meta.current_page === 1}
                 onClick={() => setFilters(prev => ({ ...prev, page: prev.page! - 1 }))}
+                className="text-on-surface-variant"
               >
-                Anterior
+                &lt;
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 disabled={meta.current_page === meta.last_page}
                 onClick={() => setFilters(prev => ({ ...prev, page: prev.page! + 1 }))}
+                className="text-on-surface-variant"
               >
-                Próximo
+                &gt;
               </Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      <TaskForm
+        open={showTaskForm || (typeof window !== 'undefined' && window.location.search.includes('create=true'))}
+        onOpenChange={(open) => {
+          setShowTaskForm(open)
+          if (!open && typeof window !== 'undefined' && window.location.search.includes('create=true')) {
+            router.push('/dashboard')
+          }
+        }}
+      />
     </div>
   )
 }

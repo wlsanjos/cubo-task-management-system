@@ -3,7 +3,7 @@
 import { AxiosError } from "axios"
 import { api } from "./api"
 
-export type TaskStatusApi = "pending" | "in_progress" | "completed" | "overdue"
+export type TaskStatusApi = "pendente" | "em_andamento" | "concluida" | "overdue"
 
 export interface Task {
   id: number
@@ -27,16 +27,16 @@ export interface TaskAssignee {
 export type TaskStatusPtBr = "pendente" | "em_andamento" | "concluida"
 
 export const STATUS_MAP: Record<TaskStatusApi, TaskStatusPtBr> = {
-  pending: "pendente",
-  in_progress: "em_andamento",
-  completed: "concluida",
+  pendente: "pendente",
+  em_andamento: "em_andamento",
+  concluida: "concluida",
   overdue: "em_andamento",
 }
 
 export const STATUS_MAP_REVERSE: Record<TaskStatusPtBr, TaskStatusApi> = {
-  pendente: "pending",
-  em_andamento: "in_progress",
-  concluida: "completed",
+  pendente: "pendente",
+  em_andamento: "em_andamento",
+  concluida: "concluida",
 }
 
 export interface TaskPtBr extends Omit<Task, "status"> {
@@ -59,6 +59,8 @@ export interface TaskFilters {
   end_date?: string
   page?: number
   per_page?: number
+  sort_by?: string
+  order?: "asc" | "desc"
 }
 
 export interface TaskStats {
@@ -124,6 +126,8 @@ export async function getTasks(filters?: TaskFilters): Promise<PaginatedResponse
   if (filters?.end_date) params.append("end_date", filters.end_date)
   if (filters?.page) params.append("page", String(filters.page))
   if (filters?.per_page) params.append("per_page", String(filters.per_page))
+  if (filters?.sort_by) params.append("sort_by", filters.sort_by)
+  if (filters?.order) params.append("order", filters.order)
 
   const query = params.toString() ? `?${params.toString()}` : ""
   const { data } = await api.get<PaginatedResponse<Task>>(`/tasks${query}`)
@@ -148,3 +152,57 @@ export async function updateTask(id: number, payload: UpdateTaskPayload): Promis
 export async function deleteTask(id: number): Promise<void> {
   await api.delete(`/tasks/${id}`)
 }
+
+export async function getTaskById(id: number): Promise<Task> {
+  const { data } = await api.get<Task>(`/tasks/${id}`)
+  return data
+}
+
+export interface Comment {
+  id: number
+  content: string
+  created_at: string
+  user: {
+    id: number
+    name: string
+    email: string
+  }
+}
+
+export async function getComments(taskId: number): Promise<Comment[]> {
+  const { data } = await api.get<Comment[]>(`/tasks/${taskId}/comments`)
+  return data
+}
+
+export async function createComment(taskId: number, content: string): Promise<Comment> {
+  const { data } = await api.post<Comment>(`/tasks/${taskId}/comments`, { content })
+  return data
+}
+
+export interface Attachment {
+  id: number
+  filename: string
+  file_path: string
+  file_size: number
+  mime_type: string
+  created_at: string
+}
+
+export const mockAttachments: Attachment[] = [
+  {
+    id: 1,
+    filename: "auth_schema_v2.pdf",
+    file_path: "/files/auth_schema_v2.pdf",
+    file_size: 1433600,
+    mime_type: "application/pdf",
+    created_at: "2024-10-12",
+  },
+  {
+    id: 2,
+    filename: "middleware_flow_chart.png",
+    file_path: "/files/middleware_flow_chart.png",
+    file_size: 862208,
+    mime_type: "image/png",
+    created_at: "2024-10-14",
+  },
+]
