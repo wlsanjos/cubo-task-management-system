@@ -1,34 +1,45 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useParams, useRouter } from "next/navigation"
-import { getTaskById, deleteTask, mapTaskFromApi, mockAttachments, type TaskPtBr, STATUS_MAP_REVERSE } from "@/services/task.service"
-import { updateTask, type UpdateTaskPayload } from "@/services/task.service"
+import { 
+  getTaskById, 
+  deleteTask, 
+  mapTaskFromApi, 
+  STATUS_MAP_REVERSE,
+  updateTask,
+  type UpdateTaskPayload,
+  getAttachments,
+  uploadAttachment,
+  deleteAttachment,
+  downloadAttachment,
+  type Attachment
+} from "@/services/task.service"
 import { useAuth } from "@/hooks"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { AxiosError } from "axios"
 import { 
   ArrowLeft, 
   Calendar, 
-  CheckCircle2,
-  AlertCircle,
   Clock,
   Trash2,
   Settings2,
   Loader2,
   FileText,
-  Image,
+  Image as ImageIcon,
   Download,
   Plus,
-  User,
   ArrowUpRight,
+  X,
+  AlertCircle,
 } from "lucide-react"
 import { TaskForm } from "@/components/shared/task-form"
 import { CommentSection } from "@/components/shared/comment-section"
 import {
   AlertDialog,
   AlertDialogContent,
-  AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
@@ -49,13 +60,22 @@ export default function TaskDetailPage() {
   const queryClient = useQueryClient()
   const taskId = Number(params.id)
   const { user } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [showEditForm, setShowEditForm] = useState(false)
   const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
 
-  const { data: task, isLoading } = useQuery({
+  // 1. Task Data
+  const { data: task, isLoading: isTaskLoading } = useQuery({
     queryKey: ["task", taskId],
     queryFn: () => getTaskById(taskId).then(mapTaskFromApi),
+  })
+
+  // 2. Attachments Data
+  const { data: attachments = [], isLoading: isAttachmentsLoading } = useQuery({
+    queryKey: ["attachments", taskId],
+    queryFn: () => getAttachments(taskId),
   })
 
   const deleteMutation = useMutation({
@@ -83,7 +103,33 @@ export default function TaskDetailPage() {
     },
   })
 
-  if (isLoading) {
+  // Attachment Mutations
+  const uploadMutation = useMutation({
+    mutationFn: (file: File) => uploadAttachment(taskId, file, (progress) => setUploadProgress(progress)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attachments", taskId] })
+      toast.success("Anexo enviado com sucesso.")
+      setUploadProgress(null)
+    },
+    onError: (error: AxiosError<{ message?: string }>) => {
+      const data = error.response?.data
+      toast.error(data?.message || "Falha ao enviar arquivo")
+      setUploadProgress(null)
+    }
+  })
+
+  const removeAttachmentMutation = useMutation({
+    mutationFn: (attachmentId: number) => deleteAttachment(taskId, attachmentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["attachments", taskId] })
+      toast.success("Anexo removido.")
+    },
+    onError: () => {
+      toast.error("Erro ao remover anexo.")
+    }
+  })
+
+  if (isTaskLoading) {
     return (
       <div className="flex items-center justify-center min-h-[500px]">
         <div className="flex flex-col items-center gap-4">
@@ -124,12 +170,59 @@ export default function TaskDetailPage() {
   }
 
   const getFileIcon = (mimeType: string) => {
-    if (mimeType.startsWith("image/")) return <Image className="w-5 h-5 text-primary" />
+    if (mimeType.startsWith("image/")) return <ImageIcon className="w-5 h-5 text-primary" />
     return <FileText className="w-5 h-5 text-primary" />
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Frontend Validation
+    const allowedTypes = ["image/jpeg", "image/png", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+    const maxSize = 10 * 1024 * 1024 // 10MB
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Tipo de arquivo não permitido. Use JPG, PNG, PDF ou DOCX.")
+      return
+    }
+
+    if (file.size > maxSize) {
+      toast.error("O arquivo excede o limite de 10MB.")
+      return
+    }
+
+    uploadMutation.mutate(file)
+    e.target.value = "" // Reset
+  }
+
+  const handleDownload = async (attachment: Attachment) => {
+    try {
+      const blob = await downloadAttachment(taskId, attachment.id)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.setAttribute("download", attachment.original_name)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      toast.error("Erro ao baixar arquivo.")
+    }
   }
 
   return (
     <div className="max-w-7xl mx-auto w-full space-y-10">
+      {/* Hidden file input */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileSelect} 
+        className="hidden" 
+        accept=".jpg,.jpeg,.png,.pdf,.docx"
+      />
+
       {/* Editorial Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
         <div className="space-y-4 max-w-3xl">
@@ -255,40 +348,82 @@ export default function TaskDetailPage() {
                     <h3 className="label-md !text-on-surface font-black">Ativos Digitais</h3>
                   </div>
                   <span className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest bg-surface-container-low px-2 py-1 rounded">
-                     {mockAttachments.length} Arquivos
+                     {isAttachmentsLoading ? "--" : attachments.length} Arquivos
                   </span>
                </div>
                
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {mockAttachments.map((attachment) => (
+                  {attachments.map((attachment) => (
                     <div 
                       key={attachment.id}
-                      className="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low/50 hover:bg-surface-container-low transition-all border border-transparent hover:border-primary/5 group cursor-pointer"
+                      className="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low/50 hover:bg-surface-container-low transition-all border border-transparent hover:border-primary/5 group relative"
                     >
                       <div className="w-12 h-12 rounded-xl bg-surface-container-lowest flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                         {getFileIcon(attachment.mime_type)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-on-surface truncate">
-                          {attachment.filename}
+                          {attachment.original_name}
                         </p>
                         <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mt-1">
-                          {formatFileSize(attachment.file_size)} • {format(new Date(attachment.created_at), "dd MMM")}
+                          {formatFileSize(attachment.size)} • {format(new Date(attachment.created_at), "dd MMM")}
                         </p>
                       </div>
-                      <button className="text-on-surface-variant/30 hover:text-primary transition-colors pr-2">
-                        <Download className="w-5 h-5" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={() => handleDownload(attachment)}
+                          className="p-2 text-on-surface-variant/30 hover:text-primary transition-colors"
+                          title="Download"
+                        >
+                          <Download className="w-5 h-5" />
+                        </button>
+                        <button 
+                          onClick={() => removeAttachmentMutation.mutate(attachment.id)}
+                          disabled={removeAttachmentMutation.isPending}
+                          className="p-2 text-on-surface-variant/30 hover:text-red-500 transition-colors"
+                          title="Remover"
+                        >
+                          {removeAttachmentMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-5 h-5" />}
+                        </button>
+                      </div>
                     </div>
                   ))}
 
-                  <div className="p-4 rounded-2xl bg-surface-container-low/30 border-2 border-dashed border-surface-container-low flex items-center gap-4 hover:border-primary/20 hover:bg-surface-container-low/50 transition-all cursor-pointer">
-                    <div className="w-12 h-12 rounded-xl bg-surface-container-lowest flex items-center justify-center shadow-sm text-on-surface-variant/40">
-                      <Plus className="w-5 h-5" />
+                  {/* Upload Card */}
+                  <div 
+                    onClick={() => !uploadMutation.isPending && fileInputRef.current?.click()}
+                    className={cn(
+                      "p-4 rounded-2xl bg-surface-container-low/30 border-2 border-dashed flex flex-col gap-4 transition-all overflow-hidden",
+                      uploadMutation.isPending 
+                        ? "border-primary/40 bg-surface-container-low/50 cursor-wait" 
+                        : "border-surface-container-low hover:border-primary/20 hover:bg-surface-container-low/50 cursor-pointer"
+                    )}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-surface-container-lowest flex items-center justify-center shadow-sm text-on-surface-variant/40">
+                        {uploadMutation.isPending ? (
+                          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                        ) : (
+                          <Plus className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-bold text-on-surface-variant/60">
+                          {uploadMutation.isPending ? "Processando Ativo..." : "Upload de Ativo"}
+                        </p>
+                        {uploadMutation.isPending && uploadProgress !== null && (
+                          <p className="text-[10px] font-bold text-primary mt-1 uppercase tracking-widest animate-pulse">
+                            {uploadProgress}% Enviado
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-bold text-on-surface-variant/60">Upload de Ativo</p>
-                    </div>
+
+                    {uploadMutation.isPending && uploadProgress !== null && (
+                      <div className="px-1 animate-fade-in">
+                        <Progress value={uploadProgress} className="h-1.5" />
+                      </div>
+                    )}
                   </div>
                </div>
             </div>

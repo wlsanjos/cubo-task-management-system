@@ -318,6 +318,207 @@
                 ]
             }
         },
+        "/api/tasks/{task}/attachments": {
+            "get": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Listar anexos da tarefa",
+                "description": "Retorna a lista de todos os arquivos anexados a uma tarefa específica.",
+                "operationId": "bd22c8d286df208e30c32373cbe2e661",
+                "parameters": [
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de anexos",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Proibido"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    },
+                    "404": {
+                        "description": "Tarefa não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Fazer upload de anexo",
+                "description": "Envia um novo arquivo anexo para a tarefa. Limite de 5MB, formatos: jpg, png, pdf, docx.",
+                "operationId": "1d089c6ef0a9c51f75e1f38472f90676",
+                "parameters": [
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "Arquivo a ser enviado",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Anexo enviado com sucesso"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    },
+                    "403": {
+                        "description": "Proibido"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    },
+                    "404": {
+                        "description": "Tarefa não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tasks/{task}/attachments/{attachment}": {
+            "get": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Baixar anexo",
+                "description": "Faz o download ou visualização do arquivo anexo.",
+                "operationId": "83953cace99526450ff913851079e3a8",
+                "parameters": [
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream do arquivo"
+                    },
+                    "403": {
+                        "description": "Proibido"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    },
+                    "404": {
+                        "description": "Tarefa ou Anexo não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Anexos"
+                ],
+                "summary": "Remover anexo",
+                "description": "Exclui permanentemente o arquivo anexo da tarefa.",
+                "operationId": "f8f600e89d79107dfbf0346cccccf174",
+                "parameters": [
+                    {
+                        "name": "task",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Anexo removido com sucesso"
+                    },
+                    "403": {
+                        "description": "Proibido"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    },
+                    "404": {
+                        "description": "Tarefa ou Anexo não encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/tasks/stats": {
             "get": {
                 "tags": [
@@ -687,6 +888,10 @@
         {
             "name": "Comentários",
             "description": "Gerenciamento de comentários nas tarefas"
+        },
+        {
+            "name": "Anexos",
+            "description": "Gerenciamento de arquivos e anexos das tarefas"
         },
         {
             "name": "Tarefas",

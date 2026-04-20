@@ -60,7 +60,10 @@ class TaskService
             ->status($filters['status'] ?? null)
             ->dateRange($filters['start_date'] ?? null, $filters['end_date'] ?? null)
             ->search($filters['search'] ?? null)
-            ->latest()
+            ->when(isset($filters['start_date']) || isset($filters['end_date']), 
+                fn($q) => $q->orderBy('due_date', 'asc'),
+                fn($q) => $q->latest()
+            )
             ->paginate($perPage);
     }
 
@@ -92,5 +95,17 @@ class TaskService
             'completion_rate' => $completionRate,
             'overdue_tasks' => $overdueTasks,
         ];
+    }
+
+    public function uploadAttachment(Task $task, \Illuminate\Http\UploadedFile $file): \App\Models\Attachment
+    {
+        $path = $file->store('attachments', 'public');
+
+        return $task->attachments()->create([
+            'file_path' => $path,
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+        ]);
     }
 }

@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Database
+  db:
+    image: mysql:8.0
+    container_name: cubo-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-cubo_tasks}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_USER: ${DB_USERNAME:-cubo_user}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - cubo-network
+
+  # Backend (PHP-FPM)
+  api:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend/Dockerfile
+    container_name: cubo-api
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - db
+    networks:
+      - cubo-network
+
+  # Web Server (Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: cubo-nginx
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www
+      - ./docker/nginx/laravel.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+    networks:
+      - cubo-network
+
+  # Frontend (Next.js)
+  frontend:
+    image: node:20-alpine
+    container_name: cubo-frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    networks:
+      - cubo-network
+
+networks:
+  cubo-network:
+    driver: bridge
+
+volumes:
+  db_data:

@@ -11,7 +11,7 @@ use OpenApi\Attributes as OA;
     contact: new OA\Contact(email: "suporte@exemplo.com")
 )]
 #[OA\Server(
-    url: "http://localhost:8000",
+    url: L5_SWAGGER_CONST_HOST,
     description: "Servidor de Desenvolvimento"
 )]
 #[OA\SecurityScheme(

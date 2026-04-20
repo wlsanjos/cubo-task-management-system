@@ -18,6 +18,10 @@ class SecurityHeaders
     {
         $response = $next($request);
 
+        if (!method_exists($response, 'headers')) {
+            return $response;
+        }
+
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('X-XSS-Protection', '1; mode=block');
