@@ -1,6 +1,3 @@
-"use client"
-
-import { AxiosError } from "axios"
 import { api } from "./api"
 
 export type TaskStatusApi = "pendente" | "em_andamento" | "concluida" | "overdue"
@@ -105,18 +102,6 @@ export interface ApiErrorResponse {
   errors?: Record<string, string[]>
 }
 
-function handleApiError(error: unknown): ApiErrorResponse {
-  if (error instanceof AxiosError && error.response?.data) {
-    const data = error.response.data as ApiErrorResponse
-    if (data.errors) {
-      const firstError = Object.values(data.errors).flat()[0]
-      return { message: firstError || data.message }
-    }
-    return { message: data.message }
-  }
-  return { message: "Erro de conexão. Tente novamente." }
-}
-
 export async function getTasks(filters?: TaskFilters): Promise<PaginatedResponse<Task>> {
   const params = new URLSearchParams()
   if (filters?.status) params.append("status", filters.status)
@@ -181,28 +166,49 @@ export async function createComment(taskId: number, content: string): Promise<Co
 
 export interface Attachment {
   id: number
-  filename: string
+  task_id: number
+  original_name: string
   file_path: string
-  file_size: number
+  size: number
   mime_type: string
   created_at: string
+  updated_at: string
 }
 
-export const mockAttachments: Attachment[] = [
-  {
-    id: 1,
-    filename: "auth_schema_v2.pdf",
-    file_path: "/files/auth_schema_v2.pdf",
-    file_size: 1433600,
-    mime_type: "application/pdf",
-    created_at: "2024-10-12",
-  },
-  {
-    id: 2,
-    filename: "middleware_flow_chart.png",
-    file_path: "/files/middleware_flow_chart.png",
-    file_size: 862208,
-    mime_type: "image/png",
-    created_at: "2024-10-14",
-  },
-]
+export async function getAttachments(taskId: number): Promise<Attachment[]> {
+  const { data } = await api.get<Attachment[]>(`/tasks/${taskId}/attachments`)
+  return data
+}
+
+export async function uploadAttachment(
+  taskId: number, 
+  file: File, 
+  onProgress?: (percent: number) => void
+): Promise<Attachment> {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  const { data } = await api.post<Attachment>(`/tasks/${taskId}/attachments`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+    onUploadProgress: (progressEvent) => {
+      if (onProgress && progressEvent.total) {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        onProgress(percentCompleted)
+      }
+    },
+  })
+  return data
+}
+
+export async function deleteAttachment(taskId: number, attachmentId: number): Promise<void> {
+  await api.delete(`/tasks/${taskId}/attachments/${attachmentId}`)
+}
+
+export async function downloadAttachment(taskId: number, attachmentId: number): Promise<Blob> {
+  const { data } = await api.get(`/tasks/${taskId}/attachments/${attachmentId}`, {
+    responseType: "blob",
+  })
+  return data
+}
