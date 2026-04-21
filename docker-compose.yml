@@ -11,6 +11,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
       MYSQL_PASSWORD: ${DB_PASSWORD:-root}
       MYSQL_USER: ${DB_USERNAME:-cubo_user}
+      TZ: America/Sao_Paulo
     ports:
       - "3307:3306"
     volumes:
@@ -35,6 +36,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      TZ: America/Sao_Paulo
     networks:
       - cubo-network
 
@@ -65,7 +68,9 @@ services:
     command: npm run dev
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_TIMEZONE=America/Sao_Paulo
       - WATCHPACK_POLLING=true
+      - TZ=America/Sao_Paulo
     networks:
       - cubo-network
 

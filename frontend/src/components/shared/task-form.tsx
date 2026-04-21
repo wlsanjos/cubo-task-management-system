@@ -38,7 +38,9 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
   const [title, setTitle] = useState(task?.title || "")
   const [description, setDescription] = useState(task?.description || "")
   const [status, setStatus] = useState<TaskStatusPtBr>(task?.status || "pendente")
-  const [dueDate, setDueDate] = useState<Date | undefined>(task?.due_date ? parseISO(task.due_date) : undefined)
+  const [dueDate, setDueDate] = useState<Date | undefined>(
+    task?.due_date ? new Date(task.due_date + 'T00:00:00') : undefined
+  )
 
   const isEdit = !!task
 
@@ -112,7 +114,10 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val ? handleClose() : onOpenChange(val)}>
-      <DialogContent className="sm:max-w-xl p-0 bg-transparent border-none shadow-none focus:outline-none">
+      <DialogContent 
+        showCloseButton={false}
+        className="sm:max-w-xl p-0 bg-transparent border-none shadow-none ring-0 focus:outline-none overflow-visible"
+      >
         <div className="relative glass-morphism rounded-[2.5rem] shadow-2xl border border-white/20 overflow-hidden animate-fade-in-up">
           {/* Header Accent */}
           <div className="absolute top-0 left-0 right-0 h-1 signature-gradient opacity-80" />
@@ -164,7 +169,7 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
 
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-3">
-                  <label className="label-md ml-1">Prioridade / Status</label>
+                  <label className="label-md ml-1">Status da Iniciativa</label>
                   <div className="relative">
                     <select
                       value={status}
@@ -185,7 +190,7 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="label-md ml-1">Deadline Final</label>
+                  <label className="label-md ml-1">Prazo de Entrega</label>
                   <DatePicker
                     date={dueDate}
                     setDate={setDueDate}

@@ -35,8 +35,34 @@ class TaskController extends Controller
                         new OA\Property(property: 'pending_tasks', type: 'integer', example: 5),
                         new OA\Property(property: 'in_progress_tasks', type: 'integer', example: 3),
                         new OA\Property(property: 'completed_tasks', type: 'integer', example: 7),
-                        new OA\Property(property: 'completion_rate', type: 'number', format: 'float', example: 46.67),
-                        new OA\Property(property: 'overdue_tasks', type: 'integer', example: 2)
+                        new OA\Property(property: 'completion_rate', type: 'number', format: 'float', example: 46.7),
+                        new OA\Property(property: 'avg_resolution_time', type: 'number', format: 'float', example: 4.2),
+                        new OA\Property(property: 'success_rate', type: 'number', format: 'float', example: 85.0),
+                        new OA\Property(property: 'critical_tasks', type: 'integer', example: 2),
+                        new OA\Property(
+                            property: 'weekly_volume', 
+                            type: 'array', 
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: 'day', type: 'string', example: 'SEG'),
+                                    new OA\Property(property: 'completed', type: 'integer', example: 5),
+                                    new OA\Property(property: 'pending', type: 'integer', example: 2)
+                                ]
+                            )
+                        ),
+                        new OA\Property(
+                            property: 'team_performance', 
+                            type: 'array', 
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: 'name', type: 'string', example: 'Lead Architect'),
+                                    new OA\Property(property: 'role', type: 'string', example: 'Membro da Equipe'),
+                                    new OA\Property(property: 'active', type: 'integer', example: 14),
+                                    new OA\Property(property: 'completed', type: 'integer', example: 82),
+                                    new OA\Property(property: 'efficiency', type: 'integer', example: 88)
+                                ]
+                            )
+                        )
                     ]
                 )
             ),

@@ -116,18 +116,18 @@ class TaskService
     }
 
     /**
-     * Export tasks to PDF with professional styling.
+     * Export tasks to PDF with professional styling and executive metrics.
      */
     public function exportToPdf(array $filters): \Barryvdh\DomPDF\PDF
     {
-        // For PDF, we load all filtered data. 
-        // If the volumes are extremely large, a separate queue job would be needed,
-        // but for standard exports, we load the collection.
-        $tasks = $this->prepareTaskQuery($filters)->get();
+        $tasks = $this->prepareTaskQuery($filters)->with('user')->get();
+        $stats = $this->calculateAdvancedStats($tasks);
 
         return Pdf::loadView('reports.tasks-export', [
             'tasks' => $tasks,
+            'stats' => $stats,
             'generated_at' => now()->format('d/m/Y H:i'),
+            'responsible' => Auth::user()->name,
         ])->setPaper('a4', 'landscape');
     }
 
@@ -136,28 +136,87 @@ class TaskService
      */
     public function getDashboardStats(): array
     {
-        $baseQuery = Auth::user()->tasks();
+        $tasks = Auth::user()->tasks()->with('user')->get();
+        return $this->calculateAdvancedStats($tasks);
+    }
 
-        $totalTasks = (clone $baseQuery)->count();
-        $pendingTasks = (clone $baseQuery)->where('status', 'pendente')->count();
-        $inProgressTasks = (clone $baseQuery)->where('status', 'em_andamento')->count();
-        $completedTasks = (clone $baseQuery)->where('status', 'concluida')->count();
+    /**
+     * Calculate advanced metrics from a collection of tasks.
+     */
+    protected function calculateAdvancedStats(Collection $tasks): array
+    {
+        $total = $tasks->count();
+        $completed = $tasks->where('status', 'concluida');
+        $completedCount = $completed->count();
+        
+        $pendingTasks = $tasks->where('status', 'pendente')->count();
+        $inProgressTasks = $tasks->where('status', 'em_andamento')->count();
+        
+        $completionRate = $total > 0 ? round(($completedCount / $total) * 100, 1) : 0;
 
-        $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
+        // Avg Resolution Time (in hours)
+        $avgResolutionTime = 0;
+        if ($completedCount > 0) {
+            $totalHours = $completed->reduce(function ($carry, $task) {
+                return $carry + $task->created_at->diffInHours($task->updated_at);
+            }, 0);
+            $avgResolutionTime = round($totalHours / $completedCount, 1);
+        }
 
-        $overdueTasks = (clone $baseQuery)
-            ->where('status', '!=', 'concluida')
-            ->whereNotNull('due_date')
-            ->whereDate('due_date', '<', now())
-            ->count();
+        // Success Rate (Completed on or before due_date)
+        $successCount = $completed->filter(function ($task) {
+            return !$task->due_date || $task->updated_at->startOfDay() <= $task->due_date->startOfDay();
+        })->count();
+        $successRate = $total > 0 ? round(($successCount / $total) * 100, 1) : 0;
+
+        // Critical Tasks (Overdue and not completed)
+        $criticalTasks = $tasks->filter(function ($task) {
+            return $task->status !== 'concluida' && $task->due_date && $task->due_date->isPast();
+        })->count();
+
+        // Weekly Volume (Last 7 days)
+        $weeklyVolume = [];
+        $dayMap = [
+            'Mon' => 'SEG', 'Tue' => 'TER', 'Wed' => 'QUA', 
+            'Thu' => 'QUI', 'Fri' => 'SEX', 'Sat' => 'SAB', 'Sun' => 'DOM'
+        ];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $dayName = $dayMap[$date->format('D')] ?? strtoupper($date->translatedFormat('D'));
+            $weeklyVolume[] = [
+                'day' => $dayName,
+                'completed' => $tasks->where('status', 'concluida')
+                    ->filter(fn($t) => $t->updated_at->isSameDay($date))->count(),
+                'pending' => $tasks->where('status', '!=', 'concluida')
+                    ->filter(fn($t) => $t->created_at->isSameDay($date))->count(),
+            ];
+        }
+
+        // Team Performance (Grouped by User)
+        $teamPerformance = $tasks->groupBy('user_id')->map(function ($userTasks) {
+            $uTotal = $userTasks->count();
+            $uCompleted = $userTasks->where('status', 'concluida')->count();
+            return [
+                'name' => $userTasks->first()->user->name ?? 'Usuário',
+                'role' => 'Membro da Equipe', // Could be dynamic if user has role
+                'active' => $uTotal - $uCompleted,
+                'completed' => $uCompleted,
+                'efficiency' => $uTotal > 0 ? round(($uCompleted / $uTotal) * 100) : 0,
+            ];
+        })->values()->toArray();
 
         return [
-            'total_tasks' => $totalTasks,
+            'total_tasks' => $total,
             'pending_tasks' => $pendingTasks,
             'in_progress_tasks' => $inProgressTasks,
-            'completed_tasks' => $completedTasks,
+            'completed_tasks' => $completedCount,
             'completion_rate' => $completionRate,
-            'overdue_tasks' => $overdueTasks,
+            'avg_resolution_time' => $avgResolutionTime,
+            'success_rate' => $successRate,
+            'critical_tasks' => $criticalTasks,
+            'weekly_volume' => $weeklyVolume,
+            'team_performance' => $teamPerformance,
         ];
     }
 
