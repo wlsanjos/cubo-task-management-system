@@ -329,8 +329,14 @@ export default function ReportsPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <Button variant="ghost" onClick={() => window.print()} className="gap-2">
-            <Clock className="w-4 h-4" /> Imprimir Vista
+          <Button 
+            variant="ghost" 
+            onClick={() => handleDownload("pdf")} 
+            className="gap-2"
+            disabled={isExportingPdf}
+          >
+            {isExportingPdf ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Clock className="w-4 h-4" />}
+            Imprimir Vista
           </Button>
           <Button onClick={() => handleDownload("pdf")} className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
             <FileText className="w-4 h-4" /> Gerar PDF Completo
