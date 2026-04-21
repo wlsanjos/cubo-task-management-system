@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM php:8.4-fpm
 
 # Instalação de dependências do sistema
 RUN apt-get update && apt-get install -y \
@@ -31,12 +31,16 @@ WORKDIR /var/www
 # Copiar código da aplicação (contexto raiz: copia backend/* para /var/www)
 COPY backend/ .
 
-# Copiar .env.docker para criar .env e gerar APP_KEY
+# Copiar .env.docker para criar .env
 COPY backend/.env.docker .env
-RUN php artisan key:generate
 
 # Instalação de dependências sem pacotes de desenvolvimento
-RUN composer install --no-interaction --no-dev --optimize-autoloader --no-scripts
+RUN composer install --no-interaction --no-dev --optimize-autoloader
+
+# Otimização: Cache de Configuração, Rotas e Views
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
 
 # Ajuste final de permissões para o usuário do servidor web
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
