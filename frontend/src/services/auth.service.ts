@@ -54,15 +54,12 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
     const data = response.data
     const token = data.token || data.access_token || ""
 
-    console.log(data.access_token)
-
     localStorage.setItem("token", token)
     localStorage.setItem("user", JSON.stringify(data.user))
     return data
   } catch (error) {
-    const err = handleApiError(error)
-    const errMsg = err.message
-    throw new Error(errMsg)
+    // Relançamos o erro para que o componente possa tratar (ex: verificar status 401/422)
+    throw error
   }
 }
 
@@ -76,8 +73,7 @@ export async function register(payload: RegisterPayload): Promise<AuthResponse> 
     localStorage.setItem("user", JSON.stringify(data.user))
     return data
   } catch (error) {
-    const err = handleApiError(error)
-    throw new Error(err.message)
+    throw error
   }
 }
 
