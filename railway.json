@@ -5,9 +5,9 @@
   },
   "services": {
     "api": {
-      "source": "backend",
+      "source": ".",
       "docker": {
-        "dockerfilePath": "../docker/backend/Dockerfile"
+        "dockerfilePath": "docker/backend/Dockerfile"
       },
       "deploy": {
         "healthcheckPath": "/api/status",
@@ -17,9 +17,9 @@
       }
     },
     "frontend": {
-      "source": "frontend",
+      "source": ".",
       "docker": {
-        "dockerfilePath": "Dockerfile"
+        "dockerfilePath": "frontend/Dockerfile"
       },
       "build": {
         "buildArgs": {

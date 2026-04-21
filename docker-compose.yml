@@ -28,8 +28,8 @@ services:
   # Backend (PHP-FPM)
   api:
     build:
-      context: ./backend
-      dockerfile: ../docker/backend/Dockerfile
+      context: .
+      dockerfile: docker/backend/Dockerfile
     container_name: cubo-api
     restart: unless-stopped
     working_dir: /var/www
@@ -62,8 +62,8 @@ services:
   # Frontend (Next.js Production)
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: cubo-frontend
     restart: unless-stopped
     ports:
