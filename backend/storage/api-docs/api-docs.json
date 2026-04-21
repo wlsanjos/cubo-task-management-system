@@ -553,11 +553,69 @@
                                         "completion_rate": {
                                             "type": "number",
                                             "format": "float",
-                                            "example": 46.67
+                                            "example": 46.7
                                         },
-                                        "overdue_tasks": {
+                                        "avg_resolution_time": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 4.2
+                                        },
+                                        "success_rate": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 85
+                                        },
+                                        "critical_tasks": {
                                             "type": "integer",
                                             "example": 2
+                                        },
+                                        "weekly_volume": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "day": {
+                                                        "type": "string",
+                                                        "example": "SEG"
+                                                    },
+                                                    "completed": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    },
+                                                    "pending": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "team_performance": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Lead Architect"
+                                                    },
+                                                    "role": {
+                                                        "type": "string",
+                                                        "example": "Membro da Equipe"
+                                                    },
+                                                    "active": {
+                                                        "type": "integer",
+                                                        "example": 14
+                                                    },
+                                                    "completed": {
+                                                        "type": "integer",
+                                                        "example": 82
+                                                    },
+                                                    "efficiency": {
+                                                        "type": "integer",
+                                                        "example": 88
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
                                         }
                                     },
                                     "type": "object"
