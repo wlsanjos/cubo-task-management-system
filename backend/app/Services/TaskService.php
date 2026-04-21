@@ -176,11 +176,16 @@ class TaskService
 
         // Weekly Volume (Last 7 days)
         $weeklyVolume = [];
+        $dayMap = [
+            'Mon' => 'SEG', 'Tue' => 'TER', 'Wed' => 'QUA', 
+            'Thu' => 'QUI', 'Fri' => 'SEX', 'Sat' => 'SAB', 'Sun' => 'DOM'
+        ];
+
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
-            $dayName = $date->translatedFormat('D');
+            $dayName = $dayMap[$date->format('D')] ?? strtoupper($date->translatedFormat('D'));
             $weeklyVolume[] = [
-                'day' => strtoupper($dayName),
+                'day' => $dayName,
                 'completed' => $tasks->where('status', 'concluida')
                     ->filter(fn($t) => $t->updated_at->isSameDay($date))->count(),
                 'pending' => $tasks->where('status', '!=', 'concluida')
