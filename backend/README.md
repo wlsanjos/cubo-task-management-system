@@ -60,4 +60,3 @@ O projeto utiliza o **Laravel Pint** para garantir que o código siga estritamen
 ```
 
 ---
-Desenvolvido com foco em excelência técnica e escalabilidade.

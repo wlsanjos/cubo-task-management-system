@@ -6,7 +6,7 @@ Esta é a interface inteligente do sistema, desenvolvida com **Next.js 15**. O p
 
 ## 🎨 Design e User Experience
 
-- **Estilização Dinâmica:** Utilizamos **Tailwind CSS** para um design responsivo, mantendo a consistência visual em qualquer dispositivo.
+- **Estilização Dinâmica:** Utilizado **Tailwind CSS** para um design responsivo, mantendo a consistência visual em qualquer dispositivo.
 - **Ecossistema UI:** Baseado em **Shadcn UI** e **Lucide React**, garantindo componentes acessíveis e esteticamente premium.
 - **Paleta de Cores:** Focada em tons de cinza e azul (Slate), proporcionando um ambiente de trabalho profissional e livre de distrações.
 
@@ -54,4 +54,3 @@ Caso precise rodar manualmente para desenvolvimento:
    ```
 
 ---
-Desenvolvido com foco em visual premium e performance técnica.

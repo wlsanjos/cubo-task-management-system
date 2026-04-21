@@ -83,5 +83,3 @@ O projeto está dividido de forma modular para facilitar a manutenção:
 - **Build de Produção:** O backend já nasce com `config:cache` e `route:cache` aplicados na imagem Docker.
 - **Frontend Standalone:** O Next.js é compilado para rodar de forma isolada, ignorando `node_modules` de desenvolvimento no container final.
 - **Documentação:** API 100% documentada via Swagger em `http://localhost:8000/api/documentation`.
-
-Desenvolvido com foco em excelência técnica e experiência do usuário.
