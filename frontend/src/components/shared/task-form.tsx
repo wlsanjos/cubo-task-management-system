@@ -169,7 +169,7 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
 
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-3">
-                  <label className="label-md ml-1">Prioridade / Status</label>
+                  <label className="label-md ml-1">Status da Iniciativa</label>
                   <div className="relative">
                     <select
                       value={status}
@@ -190,7 +190,7 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="label-md ml-1">Deadline Final</label>
+                  <label className="label-md ml-1">Prazo de Entrega</label>
                   <DatePicker
                     date={dueDate}
                     setDate={setDueDate}
