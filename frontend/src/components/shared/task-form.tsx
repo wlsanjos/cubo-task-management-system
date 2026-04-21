@@ -112,7 +112,10 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val ? handleClose() : onOpenChange(val)}>
-      <DialogContent className="sm:max-w-xl p-0 bg-transparent border-none shadow-none focus:outline-none">
+      <DialogContent 
+        showCloseButton={false}
+        className="sm:max-w-xl p-0 bg-transparent border-none shadow-none ring-0 focus:outline-none overflow-visible"
+      >
         <div className="relative glass-morphism rounded-[2.5rem] shadow-2xl border border-white/20 overflow-hidden animate-fade-in-up">
           {/* Header Accent */}
           <div className="absolute top-0 left-0 right-0 h-1 signature-gradient opacity-80" />
