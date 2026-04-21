@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\Task;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TaskService
 {
@@ -56,15 +59,76 @@ class TaskService
      */
     public function listTasks(array $filters = [], int $perPage = 10): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
-        return Auth::user()->tasks()
+        return $this->prepareTaskQuery($filters)->paginate($perPage);
+    }
+
+    /**
+     * Prepare a query for tasks based on filters.
+     */
+    protected function prepareTaskQuery(array $filters): Builder
+    {
+        return Auth::user()->tasks()->getQuery()
             ->status($filters['status'] ?? null)
             ->dateRange($filters['start_date'] ?? null, $filters['end_date'] ?? null)
             ->search($filters['search'] ?? null)
             ->when(isset($filters['start_date']) || isset($filters['end_date']), 
                 fn($q) => $q->orderBy('due_date', 'asc'),
                 fn($q) => $q->latest()
-            )
-            ->paginate($perPage);
+            );
+    }
+
+    /**
+     * Export tasks to CSV using streamed response for memory efficiency.
+     */
+    public function exportToCsv(array $filters): StreamedResponse
+    {
+        $fileName = 'tasks_export_' . now()->format('Y-m-d_His') . '.csv';
+        
+        $response = new StreamedResponse(function () use ($filters) {
+            $handle = fopen('php://output', 'w');
+            
+            // Add BOM for Excel compatibility (UTF-8)
+            fputs($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Headers
+            fputcsv($handle, ['ID', 'Título', 'Status', 'Vencimento', 'Criado em']);
+
+            // Process in chunks to keep memory usage low
+            $this->prepareTaskQuery($filters)->chunk(200, function ($tasks) use ($handle) {
+                foreach ($tasks as $task) {
+                    fputcsv($handle, [
+                        $task->id,
+                        $task->title,
+                        $task->status,
+                        $task->due_date ? $task->due_date->format('Y-m-d') : '-',
+                        $task->created_at->format('Y-m-d H:i:s'),
+                    ]);
+                }
+            });
+
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+        $response->headers->set('Content-Disposition', "attachment; filename=\"{$fileName}\"");
+
+        return $response;
+    }
+
+    /**
+     * Export tasks to PDF with professional styling.
+     */
+    public function exportToPdf(array $filters): \Barryvdh\DomPDF\PDF
+    {
+        // For PDF, we load all filtered data. 
+        // If the volumes are extremely large, a separate queue job would be needed,
+        // but for standard exports, we load the collection.
+        $tasks = $this->prepareTaskQuery($filters)->get();
+
+        return Pdf::loadView('reports.tasks-export', [
+            'tasks' => $tasks,
+            'generated_at' => now()->format('d/m/Y H:i'),
+        ])->setPaper('a4', 'landscape');
     }
 
     /**

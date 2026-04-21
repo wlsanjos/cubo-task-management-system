@@ -201,4 +201,64 @@ class TaskController extends Controller
         $this->taskService->deleteTask($task->id);
         return response()->json(['message' => 'Tarefa movida para a lixeira']);
     }
+
+    #[OA\Get(
+        path: '/api/tasks/export/csv',
+        summary: 'Exportar tarefas para CSV',
+        description: 'Gera um arquivo CSV das tarefas filtradas para download.',
+        security: [['bearerAuth' => []]],
+        tags: ['Tarefas'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Arquivo CSV gerado com sucesso',
+                content: new OA\MediaType(
+                    mediaType: 'text/csv',
+                    schema: new OA\Schema(type: 'string', format: 'binary')
+                )
+            ),
+            new OA\Response(response: 401, description: 'Não autorizado')
+        ]
+    )]
+    #[OA\Parameter(name: 'status', in: 'query', description: 'Filtrar por status', required: false, schema: new OA\Schema(type: 'string', enum: ['pendente', 'em_andamento', 'concluida']))]
+    #[OA\Parameter(name: 'start_date', in: 'query', description: 'Data inicial (YYYY-MM-DD)', required: false, schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'end_date', in: 'query', description: 'Data final (YYYY-MM-DD)', required: false, schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'search', in: 'query', description: 'Busca textual', required: false, schema: new OA\Schema(type: 'string'))]
+    public function exportCsv(\Illuminate\Http\Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $filters = $request->only(['status', 'start_date', 'end_date', 'search']);
+        return $this->taskService->exportToCsv($filters);
+    }
+
+    #[OA\Get(
+        path: '/api/tasks/export/pdf',
+        summary: 'Exportar tarefas para PDF',
+        description: 'Gera um arquivo PDF profissional das tarefas filtradas para download.',
+        security: [['bearerAuth' => []]],
+        tags: ['Tarefas'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Arquivo PDF gerado com sucesso',
+                content: new OA\MediaType(
+                    mediaType: 'application/pdf',
+                    schema: new OA\Schema(type: 'string', format: 'binary')
+                )
+            ),
+            new OA\Response(response: 401, description: 'Não autorizado')
+        ]
+    )]
+    #[OA\Parameter(name: 'status', in: 'query', description: 'Filtrar por status', required: false, schema: new OA\Schema(type: 'string', enum: ['pendente', 'em_andamento', 'concluida']))]
+    #[OA\Parameter(name: 'start_date', in: 'query', description: 'Data inicial', required: false, schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'end_date', in: 'query', description: 'Data final', required: false, schema: new OA\Schema(type: 'string', format: 'date'))]
+    #[OA\Parameter(name: 'search', in: 'query', description: 'Busca textual', required: false, schema: new OA\Schema(type: 'string'))]
+    public function exportPdf(\Illuminate\Http\Request $request): \Illuminate\Http\Response
+    {
+        $filters = $request->only(['status', 'start_date', 'end_date', 'search']);
+        $pdf = $this->taskService->exportToPdf($filters);
+        
+        $fileName = 'tasks_export_' . now()->format('Y-m-d_His') . '.pdf';
+        
+        return $pdf->download($fileName);
+    }
 }
