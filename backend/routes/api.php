@@ -15,6 +15,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Tarefas
     Route::get('/tasks/stats', [\App\Http\Controllers\Api\TaskController::class, 'stats']);
+    Route::get('/tasks/export/csv', [\App\Http\Controllers\Api\TaskController::class, 'exportCsv']);
+    Route::get('/tasks/export/pdf', [\App\Http\Controllers\Api\TaskController::class, 'exportPdf']);
     Route::apiResource('tasks', \App\Http\Controllers\Api\TaskController::class);
 
     // Comentários
