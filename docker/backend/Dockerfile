@@ -46,5 +46,8 @@ RUN php artisan config:cache \
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-EXPOSE 9000
-CMD ["php-fpm"]
+# Expose a porta dinâmica do Railway
+EXPOSE $PORT
+
+# Comando para rodar migrações e iniciar o servidor
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
