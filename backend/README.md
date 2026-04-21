@@ -1,58 +1,62 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Backend (Laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Este é o backend do sistema, desenvolvido em **Laravel 13**. Ele fornece uma API REST para gerenciamento de tarefas, comentários e geração de relatórios.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠 Stack Técnica
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Framework:** Laravel 13
+- **PHP:** Versão 8.4 (ou 8.3+)
+- **Autenticação:** Sanctum (Token-based)
+- **Documentação:** Swagger (L5-Swagger)
+- **Geração de PDF:** DomPDF
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🏗 Como o sistema foi organizado
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Lógica de Negócio (Services)
+Para não poluir os Controllers, toda a lógica principal (como cálculos de estatísticas e filtros de exportação) fica dentro da pasta `app/Services`. Isso deixa o código mais limpo e fácil de testar.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Segurança e Permissões
+- Só usuários logados podem acessar a API.
+- Cada usuário só consegue ver, editar ou excluir as suas próprias tarefas. Isso é controlado através das **Policies** do Laravel.
+- Usei **Soft Deletes**, então quando uma tarefa é "excluída", ela apenas é marcada no banco, evitando perdas acidentais.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## 📊 Relatórios e Dados
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+A API possui endpoints específicos para extrair informações:
+- `/api/tasks/stats`: Traz os números do dashboard (progresso, volume semanal, etc).
+- `/api/tasks/export/pdf`: Gera um arquivo PDF formatado com as tarefas.
+- `/api/tasks/export/csv`: Exporta os dados brutos para planilhas.
 
+---
+
+## 🧪 Prática e Qualidade
+
+### Documentação da API (Explore os endpoints)
+Com o sistema rodando, você pode testar cada rota pelo Swagger:
+`http://localhost:8000/api/documentation`
+
+Se fizer mudanças nas rotas e precisar atualizar o Swagger:
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+php artisan l5-swagger:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Rodando Testes
+Para garantir que as funcionalidades principais estão funcionando:
+```bash
+php artisan test
+```
 
-## Contributing
+### Padronização de Código
+Usei o **Laravel Pint** para manter o estilo do código organizado dentro dos padrões do PHP moderno:
+```bash
+./vendor/bin/pint
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+Desenvolvido como parte de um desafio técnico.

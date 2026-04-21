@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend (Next.js)
 
-## Getting Started
+Este é a interface do sistema, desenvolvida com **Next.js 15**. O foco foi criar uma experiência de uso fluida, rápida e com um visual moderno e limpo.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🎨 Layout e Estilo
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Estilização:** Usei **Tailwind CSS** para um design responsivo e fácil de manter.
+- **Componentes:** A base da interface foi construída com **Shadcn UI** e **Lucide React** para ícones.
+- **Visual:** O estilo segue uma linha moderna, com tons de cinza e azul (Slate), focando na legibilidade.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠 Principais Tecnologias
 
-## Learn More
+- **Framework:** Next.js 15 (App Router)
+- **Gerenciamento de Dados:** **TanStack Query (React Query)** para lidar com o cache e a sincronização com a API.
+- **Formulários:** **React Hook Form** + **Zod** para validações seguras.
+- **Notificações:** **Sonner** para avisos de sucesso ou erro (toasts).
+- **Gráficos:** Implementação de cards de indicadores e gráficos de volume para facilitar o acompanhamento.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧠 Como o código foi pensado
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Gestão de Dados (Server State)
+Em vez de usar Redux ou Context API para tudo, optei pelo **TanStack Query**. Isso permite que o sistema atualize as listas de tarefas e os números do dashboard de forma quase instantânea após qualquer mudança (como ao criar ou concluir uma tarefa).
 
-## Deploy on Vercel
+### Funcionalidades do Usuário
+- **Dashboard:** Resumo visual de como está a produtividade.
+- **Gerenciamento:** CRUD completo de tarefas com filtros de status e busca.
+- **Colaboração:** Sistema de comentários em cada tarefa para simular interação de equipe.
+- **Relatórios:** Área dedicada para download de relatórios gerados pela API.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Como rodar localmente
+
+Se você já rodou o `setup.sh` na raiz, o frontend já deve estar configurado. Caso queira rodar apenas ele separadamente:
+
+1. **Acesse a pasta:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Instale as dependências:**
+   ```bash
+   npm install
+   ```
+
+3. **Suba o servidor de dev:**
+   ```bash
+   npm run dev
+   ```
+
+---
+Desenvolvido como parte de um desafio técnico.
