@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # 1. Garantir que este script e outros essenciais tenham permissão de execução
 # Se estiver no Linux/WSL, você pode rodar: chmod +x setup.sh && ./setup.sh
@@ -11,22 +12,22 @@ fi
 
 # 3. Subir os containers
 # Agora o Docker aguarda o banco estar "healthy" automaticamente
-docker-compose up -d --build
+docker compose up -d --build
 
 echo "📦 Instalando dependências do Backend..."
-docker-compose exec api composer install
+docker compose exec api composer install
 
 echo "🔐 Ajustando permissões de storage e cache (Urgente)..."
-docker-compose exec api chmod -R 777 storage bootstrap/cache
+docker compose exec api chmod -R 777 storage bootstrap/cache
 
 echo "🔑 Gerando chave de aplicação Laravel..."
-docker-compose exec api php artisan key:generate --ansi
+docker compose exec api php artisan key:generate --ansi
 
 echo "🗄️ Executando migrações do Banco de Dados..."
-docker-compose exec api php artisan migrate --force
+docker compose exec api php artisan migrate --force
 
 echo "🎨 Instalando dependências do Frontend..."
-docker-compose exec frontend npm install
+docker compose exec frontend npm install
 
 echo "✅ Setup concluído!"
 echo "Frontend: http://localhost:3000"

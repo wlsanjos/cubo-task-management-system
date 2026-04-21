@@ -50,7 +50,7 @@ function handleApiError(error: unknown): ApiError {
 
 export async function login(payload: LoginPayload): Promise<AuthResponse> {
   try {
-    const response = await api.post<AuthResponse>("/login", payload)
+    const response = await api.post<AuthResponse>("login", payload)
     const data = response.data
     const token = data.token || data.access_token || ""
 
@@ -68,7 +68,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
 export async function register(payload: RegisterPayload): Promise<AuthResponse> {
   try {
-    const response = await api.post<AuthResponse>("/register", payload)
+    const response = await api.post<AuthResponse>("register", payload)
     const data = response.data
     const token = data.token || data.access_token || ""
 
@@ -83,7 +83,7 @@ export async function register(payload: RegisterPayload): Promise<AuthResponse> 
 
 export async function logout(): Promise<void> {
   try {
-    await api.post("/logout")
+    await api.post("logout")
   } catch {
     // Ignore logout API error
   } finally {

@@ -27,8 +27,8 @@ services:
   # Backend (PHP-FPM)
   api:
     build:
-      context: ./backend
-      dockerfile: ../docker/backend/Dockerfile
+      context: ./docker/backend
+      dockerfile: Dockerfile
     container_name: cubo-api
     working_dir: /var/www
     volumes:
@@ -67,7 +67,7 @@ services:
       - "3000:3000"
     command: npm run dev
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/
       - NEXT_PUBLIC_TIMEZONE=America/Sao_Paulo
       - WATCHPACK_POLLING=true
       - TZ=America/Sao_Paulo
