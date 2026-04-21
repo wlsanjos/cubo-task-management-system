@@ -38,7 +38,9 @@ export function TaskForm({ open, onOpenChange, task }: TaskFormProps) {
   const [title, setTitle] = useState(task?.title || "")
   const [description, setDescription] = useState(task?.description || "")
   const [status, setStatus] = useState<TaskStatusPtBr>(task?.status || "pendente")
-  const [dueDate, setDueDate] = useState<Date | undefined>(task?.due_date ? parseISO(task.due_date) : undefined)
+  const [dueDate, setDueDate] = useState<Date | undefined>(
+    task?.due_date ? new Date(task.due_date + 'T00:00:00') : undefined
+  )
 
   const isEdit = !!task
 
