@@ -26,7 +26,7 @@ class StoreTaskRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status' => ['required', Rule::in(['pendente', 'em_andamento', 'concluida'])],
-            'due_date' => ['nullable', 'date', 'after_or_equal:today'],
+            'due_date' => ['nullable', 'date'],
         ];
     }
 
@@ -37,7 +37,6 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             'status.in' => 'O status deve ser um dos seguintes: pendente, em_andamento ou concluida.',
-            'due_date.after_or_equal' => 'A data de entrega não pode ser no passado.',
         ];
     }
 }
