@@ -13,6 +13,8 @@ import { login as loginService } from "@/services/auth.service"
 import { useAuth } from "@/hooks"
 import { toast } from "sonner"
 
+import { AxiosError } from "axios"
+
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
   password: z.string().min(1, "Senha é obrigatória"),
@@ -29,6 +31,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -40,11 +43,36 @@ export default function LoginPage() {
       const response = await loginService(data)
       setAuth(response)
       toast.success("Bem-vindo de volta!")
-      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Pequeno delay para garantir que o toast seja visto antes do redirect pesado
+      await new Promise(resolve => setTimeout(resolve, 500))
       window.location.href = "/dashboard"
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Credenciais inválidas"
-      toast.error(message)
+      if (error instanceof AxiosError) {
+        const status = error.response?.status
+        const data = error.response?.data
+
+        if (status === 401) {
+          toast.error("Credenciais inválidas. Verifique seu e-mail e senha.")
+          setError("email", { type: "manual", message: "Verifique seu e-mail" })
+          setError("password", { type: "manual", message: "Verifique sua senha" })
+        } else if (status === 422) {
+          toast.error("Dados inválidos. Por favor, corrija os erros abaixo.")
+          // Mapeia erros de validação do Laravel para o formulário
+          if (data?.errors) {
+            Object.keys(data.errors).forEach((key) => {
+              setError(key as keyof LoginFormData, {
+                type: "manual",
+                message: data.errors[key][0],
+              })
+            })
+          }
+        } else {
+          toast.error("Ocorreu um erro inesperado. Tente novamente mais tarde.")
+        }
+      } else {
+        toast.error("Erro de conexão. Verifique sua internet.")
+      }
     } finally {
       setIsLoading(false)
     }

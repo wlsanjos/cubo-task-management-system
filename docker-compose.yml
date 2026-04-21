@@ -5,7 +5,7 @@ services:
   db:
     image: mysql:8.0
     container_name: cubo-db
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-cubo_tasks}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
@@ -18,9 +18,10 @@ services:
       - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$${MYSQL_ROOT_PASSWORD}"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
-      retries: 20
+      retries: 5
+      start_period: 30s
     networks:
       - cubo-network
 
@@ -30,6 +31,7 @@ services:
       context: ./backend
       dockerfile: ../docker/backend/Dockerfile
     container_name: cubo-api
+    restart: unless-stopped
     working_dir: /var/www
     volumes:
       - ./backend:/var/www
@@ -45,6 +47,7 @@ services:
   nginx:
     image: nginx:alpine
     container_name: cubo-nginx
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -56,21 +59,21 @@ services:
     networks:
       - cubo-network
 
-  # Frontend (Next.js)
+  # Frontend (Next.js Production)
   frontend:
-    image: node:20-alpine
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: cubo-frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    command: npm run dev
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
       - NEXT_PUBLIC_TIMEZONE=America/Sao_Paulo
-      - WATCHPACK_POLLING=true
       - TZ=America/Sao_Paulo
+    depends_on:
+      - api
     networks:
       - cubo-network
 

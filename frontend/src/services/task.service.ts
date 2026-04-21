@@ -115,31 +115,31 @@ export async function getTasks(filters?: TaskFilters): Promise<PaginatedResponse
   if (filters?.order) params.append("order", filters.order)
 
   const query = params.toString() ? `?${params.toString()}` : ""
-  const { data } = await api.get<PaginatedResponse<Task>>(`/tasks${query}`)
+  const { data } = await api.get<PaginatedResponse<Task>>(`tasks${query}`)
   return data
 }
 
 export async function getStats(): Promise<TaskStats> {
-  const { data } = await api.get<TaskStats>("/tasks/stats")
+  const { data } = await api.get<TaskStats>("tasks/stats")
   return data
 }
 
 export async function createTask(payload: CreateTaskPayload): Promise<Task> {
-  const { data } = await api.post<Task>("/tasks", payload)
+  const { data } = await api.post<Task>("tasks", payload)
   return data
 }
 
 export async function updateTask(id: number, payload: UpdateTaskPayload): Promise<Task> {
-  const { data } = await api.put<Task>(`/tasks/${id}`, payload)
+  const { data } = await api.put<Task>(`tasks/${id}`, payload)
   return data
 }
 
 export async function deleteTask(id: number): Promise<void> {
-  await api.delete(`/tasks/${id}`)
+  await api.delete(`tasks/${id}`)
 }
 
 export async function getTaskById(id: number): Promise<Task> {
-  const { data } = await api.get<Task>(`/tasks/${id}`)
+  const { data } = await api.get<Task>(`tasks/${id}`)
   return data
 }
 
@@ -155,12 +155,12 @@ export interface Comment {
 }
 
 export async function getComments(taskId: number): Promise<Comment[]> {
-  const { data } = await api.get<Comment[]>(`/tasks/${taskId}/comments`)
+  const { data } = await api.get<Comment[]>(`tasks/${taskId}/comments`)
   return data
 }
 
 export async function createComment(taskId: number, content: string): Promise<Comment> {
-  const { data } = await api.post<Comment>(`/tasks/${taskId}/comments`, { content })
+  const { data } = await api.post<Comment>(`tasks/${taskId}/comments`, { content })
   return data
 }
 
@@ -176,7 +176,7 @@ export interface Attachment {
 }
 
 export async function getAttachments(taskId: number): Promise<Attachment[]> {
-  const { data } = await api.get<Attachment[]>(`/tasks/${taskId}/attachments`)
+  const { data } = await api.get<Attachment[]>(`tasks/${taskId}/attachments`)
   return data
 }
 
@@ -188,7 +188,7 @@ export async function uploadAttachment(
   const formData = new FormData()
   formData.append("file", file)
 
-  const { data } = await api.post<Attachment>(`/tasks/${taskId}/attachments`, formData, {
+  const { data } = await api.post<Attachment>(`tasks/${taskId}/attachments`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -203,11 +203,11 @@ export async function uploadAttachment(
 }
 
 export async function deleteAttachment(taskId: number, attachmentId: number): Promise<void> {
-  await api.delete(`/tasks/${taskId}/attachments/${attachmentId}`)
+  await api.delete(`tasks/${taskId}/attachments/${attachmentId}`)
 }
 
 export async function downloadAttachment(taskId: number, attachmentId: number): Promise<Blob> {
-  const { data } = await api.get(`/tasks/${taskId}/attachments/${attachmentId}`, {
+  const { data } = await api.get(`tasks/${taskId}/attachments/${attachmentId}`, {
     responseType: "blob",
   })
   return data

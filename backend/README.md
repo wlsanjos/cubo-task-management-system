@@ -1,62 +1,62 @@
 # Backend (Laravel)
 
-Este é o backend do sistema, desenvolvido em **Laravel 13**. Ele fornece uma API REST para gerenciamento de tarefas, comentários e geração de relatórios.
+Este é o motor do sistema, desenvolvido em **Laravel 11**. Ele fornece uma API REST robusta para gerenciamento de tarefas, comentários e geração de relatórios, com foco em performance e segurança.
 
 ---
 
-## 🛠 Stack Técnica
+## 🛠 Stack Técnica & Performance
 
-- **Framework:** Laravel 13
-- **PHP:** Versão 8.4 (ou 8.3+)
-- **Autenticação:** Sanctum (Token-based)
+- **Framework:** Laravel 11
+- **PHP:** Versão 8.4 (Otimizado com JIT)
+- **Autenticação:** Sanctum (Stateful/Token-based)
 - **Documentação:** Swagger (L5-Swagger)
-- **Geração de PDF:** DomPDF
+- **Geração de PDF:** DomPDF (com suporte a extensões GD/WebP)
+
+### ⚡ Otimização de Produção
+Para garantir o tempo de resposta mínimo, o build de produção no Docker realiza automaticamente:
+- `php artisan config:cache`: Unifica todas as configurações em um único arquivo.
+- `php artisan route:cache`: Pré-compila todas as rotas para busca instantânea.
+- `php artisan view:cache`: Garante que todos os templates Blade já estejam compilados.
 
 ---
 
-## 🏗 Como o sistema foi organizado
+## 🏗 Arquitetura e Organização
 
 ### Lógica de Negócio (Services)
-Para não poluir os Controllers, toda a lógica principal (como cálculos de estatísticas e filtros de exportação) fica dentro da pasta `app/Services`. Isso deixa o código mais limpo e fácil de testar.
+Seguimos o padrão de **Service Layer**. Toda a lógica complexa (cálculos estatísticos e filtros de exportação) reside em `app/Services`, mantendo os Controllers enxutos e focados apenas em requisição/resposta.
 
 ### Segurança e Permissões
-- Só usuários logados podem acessar a API.
-- Cada usuário só consegue ver, editar ou excluir as suas próprias tarefas. Isso é controlado através das **Policies** do Laravel.
-- Usei **Soft Deletes**, então quando uma tarefa é "excluída", ela apenas é marcada no banco, evitando perdas acidentais.
+- **Isolamento de Dados:** Cada usuário possui acesso exclusivo às suas próprias tarefas via **Laravel Policies**.
+- **Resiliência:** Implementação de **Soft Deletes** para evitar perda permanente de dados críticos.
+- **Validação:** Requests 100% tipadas e validadas antes de atingirem a camada de persistência.
 
 ---
 
 ## 📊 Relatórios e Dados
 
-A API possui endpoints específicos para extrair informações:
-- `/api/tasks/stats`: Traz os números do dashboard (progresso, volume semanal, etc).
-- `/api/tasks/export/pdf`: Gera um arquivo PDF formatado com as tarefas.
-- `/api/tasks/export/csv`: Exporta os dados brutos para planilhas.
+A API possui endpoints especializados:
+- `/api/tasks/stats`: Dashboard data (progresso, volume semanal).
+- `/api/tasks/export/pdf`: Relatório formatado via DomPDF.
+- `/api/tasks/export/csv`: Exportação bruta para análise em planilhas.
 
 ---
 
-## 🧪 Prática e Qualidade
+## 🧪 Desenvolvimento e Qualidade
 
-### Documentação da API (Explore os endpoints)
-Com o sistema rodando, você pode testar cada rota pelo Swagger:
+### Swagger (Explore os endpoints)
+Com o sistema rodando, teste cada rota em tempo real:
 `http://localhost:8000/api/documentation`
 
-Se fizer mudanças nas rotas e precisar atualizar o Swagger:
-```bash
-php artisan l5-swagger:generate
-```
-
-### Rodando Testes
-Para garantir que as funcionalidades principais estão funcionando:
+### Suíte de Testes
+Garantia de funcionamento das regras de negócio:
 ```bash
 php artisan test
 ```
 
-### Padronização de Código
-Usei o **Laravel Pint** para manter o estilo do código organizado dentro dos padrões do PHP moderno:
+### Padronização
+O projeto utiliza o **Laravel Pint** para garantir que o código siga estritamente as recomendações PSR-12:
 ```bash
 ./vendor/bin/pint
 ```
 
 ---
-Desenvolvido como parte de um desafio técnico.
