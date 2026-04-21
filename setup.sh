@@ -1,34 +1,48 @@
 #!/bin/bash
 set -e
 
-# 1. Garantir que este script e outros essenciais tenham permissão de execução
-# Se estiver no Linux/WSL, você pode rodar: chmod +x setup.sh && ./setup.sh
+# Cores para output
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-# 2. Garantir arquivo .env no backend
+echo -e "${CYAN}🚀 Iniciando o setup 'Production Ready' do Cubo Task System...${NC}"
+
+# 1. Garantir arquivo .env no backend
 if [ ! -f backend/.env ]; then
-    echo "📄 Criando .env para o Backend a partir do .env.docker..."
+    echo -e "📄 ${YELLOW}Criando .env para o Backend...${NC}"
     cp backend/.env.docker backend/.env
 fi
 
-# 3. Subir os containers
-# Agora o Docker aguarda o banco estar "healthy" automaticamente
+# 2. Subir os containers
+echo -e "🐳 ${YELLOW}Subindo os containers (isso pode levar alguns minutos na primeira vez)...${NC}"
 docker compose up -d --build
 
-echo "📦 Instalando dependências do Backend..."
-docker compose exec api composer install
+# 3. Aguardar o Banco de Dados estar pronto
+echo -e "⏳ ${YELLOW}Aguardando o Banco de Dados (MySQL) estar disponível...${NC}"
+until docker compose exec db mysqladmin ping -h "localhost" -u "root" -p"root" --silent; do
+    echo -ne "."
+    sleep 2
+done
+echo -e "\n✅ ${GREEN}Banco de Dados está pronto!${NC}"
 
-echo "🔐 Ajustando permissões de storage e cache (Urgente)..."
-docker compose exec api chmod -R 777 storage bootstrap/cache
+# 4. Comandos de Setup do Laravel
+echo -e "🔑 ${YELLOW}Gerando chave da aplicação...${NC}"
+docker compose exec api php artisan key:generate --ansi --force
 
-echo "🔑 Gerando chave de aplicação Laravel..."
-docker compose exec api php artisan key:generate --ansi
+echo -e "🔗 ${YELLOW}Criando link simbólico para o storage...${NC}"
+docker compose exec api php artisan storage:link
 
-echo "🗄️ Executando migrações do Banco de Dados..."
+echo -e "🗄️ ${YELLOW}Executando migrações...${NC}"
 docker compose exec api php artisan migrate --force
 
-echo "🎨 Instalando dependências do Frontend..."
-docker compose exec frontend npm install
+echo -e "🌱 ${YELLOW}Populando o banco com dados de teste (Seeders)...${NC}"
+docker compose exec api php artisan db:seed --force
 
-echo "✅ Setup concluído!"
-echo "Frontend: http://localhost:3000"
-echo "Backend API: http://localhost:8000"
+echo -e "\n${GREEN}==================================================${NC}"
+echo -e "${GREEN}✅ Sistema instalado com sucesso!${NC}"
+echo -e "${CYAN}🌐 Frontend:${NC} http://localhost:3000"
+echo -e "${CYAN}🌐 Backend API:${NC} http://localhost:8000"
+echo -e "${YELLOW}🔑 Credenciais de Teste:${NC} admin@example.com / password"
+echo -e "${GREEN}==================================================${NC}"
