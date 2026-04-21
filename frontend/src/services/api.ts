@@ -46,7 +46,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("token")
       localStorage.removeItem("user")
-      if (typeof window !== "undefined") {
+      
+      // Previne redirecionamento infinito se já estivermos na página de login
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.href = "/login"
       }
     }
