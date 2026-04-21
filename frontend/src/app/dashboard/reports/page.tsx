@@ -113,7 +113,7 @@ export default function ReportsPage() {
             Dados Brutos
           </Button>
           <Button 
-            className="rounded-full bg-slate-900 hover:bg-slate-800"
+            className="rounded-full bg-slate-900 hover:bg-slate-800 text-white"
             disabled={isExportingPdf}
             onClick={() => handleDownload("pdf")}
           >
@@ -332,7 +332,7 @@ export default function ReportsPage() {
           <Button variant="ghost" onClick={() => window.print()} className="gap-2">
             <Clock className="w-4 h-4" /> Imprimir Vista
           </Button>
-          <Button onClick={() => handleDownload("pdf")} className="bg-slate-900 hover:bg-slate-800 gap-2">
+          <Button onClick={() => handleDownload("pdf")} className="bg-slate-900 hover:bg-slate-800 text-white gap-2">
             <FileText className="w-4 h-4" /> Gerar PDF Completo
           </Button>
         </div>
