@@ -28,11 +28,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Definição do diretório de trabalho
 WORKDIR /var/www
 
-# Copiar código da aplicação para dentro da imagem
-COPY . .
+# Copiar código da aplicação (contexto raiz: copia backend/* para /var/www)
+COPY backend/ .
 
-# Criar .env se não existir (necessário para comandos artisan)
-RUN cp .env.docker .env
+# Copiar .env.docker para criar .env
+COPY backend/.env.docker .env
 
 # Instalação de dependências sem pacotes de desenvolvimento
 RUN composer install --no-interaction --no-dev --optimize-autoloader
