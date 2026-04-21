@@ -1,58 +1,56 @@
 # Frontend (Next.js)
 
-Este é a interface do sistema, desenvolvida com **Next.js 15**. O foco foi criar uma experiência de uso fluida, rápida e com um visual moderno e limpo.
+Esta é a interface inteligente do sistema, desenvolvida com **Next.js 15**. O projeto foi concebido para oferecer uma experiência de alta fidelidade, com performance otimizada para o mundo real.
 
 ---
 
-## 🎨 Layout e Estilo
+## 🎨 Design e User Experience
 
-- **Estilização:** Usei **Tailwind CSS** para um design responsivo e fácil de manter.
-- **Componentes:** A base da interface foi construída com **Shadcn UI** e **Lucide React** para ícones.
-- **Visual:** O estilo segue uma linha moderna, com tons de cinza e azul (Slate), focando na legibilidade.
+- **Estilização Dinâmica:** Utilizado **Tailwind CSS** para um design responsivo, mantendo a consistência visual em qualquer dispositivo.
+- **Ecossistema UI:** Baseado em **Shadcn UI** e **Lucide React**, garantindo componentes acessíveis e esteticamente premium.
+- **Paleta de Cores:** Focada em tons de cinza e azul (Slate), proporcionando um ambiente de trabalho profissional e livre de distrações.
 
 ---
 
-## 🛠 Principais Tecnologias
+## 🛠 Stack de Engenharia & Performance
 
 - **Framework:** Next.js 15 (App Router)
-- **Gerenciamento de Dados:** **TanStack Query (React Query)** para lidar com o cache e a sincronização com a API.
-- **Formulários:** **React Hook Form** + **Zod** para validações seguras.
-- **Notificações:** **Sonner** para avisos de sucesso ou erro (toasts).
-- **Gráficos:** Implementação de cards de indicadores e gráficos de volume para facilitar o acompanhamento.
+- **Node.js:** Versão 20+
+- **Gestão de Estado:** **TanStack Query (React Query)** para sincronização assíncrona e cache agressivo.
+- **Formulários:** **React Hook Form** + **Zod** para validações em tempo real.
+
+### 🚀 Otimização: Standalone Build
+Diferente de uma instalação padrão, este frontend foi configurado para **Standalone Build**:
+- **O que é:** Durante o processo de build, o Next.js gera uma pasta `.next/standalone` que contém apenas o código estritamente necessário para rodar o servidor.
+- **Vantagem:** Reduzimos drasticamente o tamanho da imagem Docker, pois não precisamos levar todas as `node_modules` de desenvolvimento para o container final. O sistema roda diretamente via `node server.js`.
 
 ---
 
-## 🧠 Como o código foi pensado
+## 🧠 Inteligência do Sistema
 
-### Gestão de Dados (Server State)
-Em vez de usar Redux ou Context API para tudo, optei pelo **TanStack Query**. Isso permite que o sistema atualize as listas de tarefas e os números do dashboard de forma quase instantânea após qualquer mudança (como ao criar ou concluir uma tarefa).
+### Sincronização de Dados (Server State)
+Utilizamos o **TanStack Query** para que a interface reflita mudanças no backend quase instantaneamente. Quando você cria uma tarefa ou adiciona um comentário, as listas e os indicadores do dashboard são invalidados e atualizados em background, eliminando a necessidade de "refresh" manual.
 
-### Funcionalidades do Usuário
-- **Dashboard:** Resumo visual de como está a produtividade.
-- **Gerenciamento:** CRUD completo de tarefas com filtros de status e busca.
-- **Colaboração:** Sistema de comentários em cada tarefa para simular interação de equipe.
-- **Relatórios:** Área dedicada para download de relatórios gerados pela API.
+### Funcionalidades
+- **Dashboard Analítico:** Resumo visual de produtividade com gráficos de volume semanal.
+- **Gestão Ágil:** CRUD de tarefas com filtros inteligentes e busca textual.
+- **Interação:** Sistema de comentários detalhado para cada atividade.
+- **Relatórios:** Central de exportação integrada diretamente com a API.
 
 ---
 
 ## 🚀 Como rodar localmente
 
-Se você já rodou o `setup.sh` na raiz, o frontend já deve estar configurado. Caso queira rodar apenas ele separadamente:
+Se você utilizou o `setup.sh` (ou `setup.ps1`) na raiz do projeto, o frontend já está configurado e rodando em modo otimizado.
 
-1. **Acesse a pasta:**
-   ```bash
-   cd frontend
-   ```
-
-2. **Instale as dependências:**
+Caso precise rodar manualmente para desenvolvimento:
+1. **Instale as dependências:**
    ```bash
    npm install
    ```
-
-3. **Suba o servidor de dev:**
+2. **Inicie em modo dev:**
    ```bash
    npm run dev
    ```
 
 ---
-Desenvolvido como parte de um desafio técnico.
