@@ -10,6 +10,11 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Argumentos de build para Railway
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Desabilitar telemetria durante o build
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build

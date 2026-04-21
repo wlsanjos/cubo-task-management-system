@@ -8,12 +8,27 @@
       "source": "backend",
       "docker": {
         "dockerfilePath": "../docker/backend/Dockerfile"
+      },
+      "deploy": {
+        "healthcheckPath": "/api/status",
+        "healthcheckTimeout": 5,
+        "restartPolicyType": "ON_FAILURE",
+        "startCommand": "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
       }
     },
     "frontend": {
       "source": "frontend",
       "docker": {
         "dockerfilePath": "Dockerfile"
+      },
+      "build": {
+        "buildArgs": {
+          "NEXT_PUBLIC_API_URL": "${{ NEXT_PUBLIC_API_URL }}"
+        }
+      },
+      "deploy": {
+        "healthcheckPath": "/",
+        "restartPolicyType": "ON_FAILURE"
       }
     }
   }
