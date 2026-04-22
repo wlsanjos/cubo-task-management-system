@@ -21,9 +21,9 @@ docker compose up -d --build
 
 # 3. Aguardar o Banco de Dados estar pronto
 echo -e "⏳ ${YELLOW}Aguardando o Banco de Dados (MySQL) estar disponível...${NC}"
-until docker compose exec db mysqladmin ping -h "localhost" -u "root" -p"root" --silent; do
+until docker compose exec api php artisan db:monitor --databases=mysql > /dev/null 2>&1; do
     echo -ne "."
-    sleep 2
+    sleep 3
 done
 echo -e "\n✅ ${GREEN}Banco de Dados está pronto!${NC}"
 
