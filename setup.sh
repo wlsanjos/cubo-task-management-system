@@ -35,7 +35,7 @@ echo -e "🔗 ${YELLOW}Criando link simbólico para o storage...${NC}"
 docker compose exec api php artisan storage:link
 
 echo -e "🗄️ ${YELLOW}Executando migrações...${NC}"
-docker compose exec api php artisan migrate --force
+docker compose exec api php artisan migrate:fresh --force
 
 echo -e "🌱 ${YELLOW}Populando o banco com dados de teste (Seeders)...${NC}"
 docker compose exec api php artisan db:seed --force
